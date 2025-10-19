@@ -1,0 +1,20 @@
+openai==1.95.1
+python-dotenv==1.1.1
+rapidfuzz==3.13.0
+pypdf
+langchain
+langchain-community
+tiktoken
+chromadb
+langchain-openai
+langchain-chroma
+langchain-core
+PyPDF2
+sentence-transformers
+torch
+langchain-huggingface
+
+# OCR and PDF image conversion
+pytesseract
+pdf2image
+Pillow

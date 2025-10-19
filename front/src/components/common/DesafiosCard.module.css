@@ -1,0 +1,59 @@
+.cardContainer {
+  width: 321px;
+  height: 223px; 
+  padding: 24px;
+  border-radius: 12px;
+  border: 2px solid rgba(66, 44, 135, 0.20); 
+  background: #DFE9FF; 
+
+  display: flex;
+  flex-direction: column; 
+  justify-content: space-between; 
+}
+
+.header {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 12px;
+}
+
+.title {
+  color: #1F2937; /* Cor do texto no Figma */
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0; /* Remover margens padrão */
+}
+
+.numberTag {
+  background-color: #F0F2F5; /* Um verde do Figma ou similar para o número */
+  color: #121417; /* Cor do texto no Figma */
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 9999px; /* Para deixar redondo */
+}
+
+.description {
+  color: #000000CC; /* Cor do texto no Figma */
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: auto; /* Empurra o botão para baixo, ocupando espaço restante */
+}
+
+.button {
+  background-color: #26266D; /* Cor roxa do botão no Figma */
+  color: #FFFFFF;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  align-self: flex-end; /* Alinha o botão à direita no final */
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #553a9e; /* Um pouco mais claro no hover */
+}

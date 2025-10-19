@@ -1,0 +1,183 @@
+.pageContainer {
+  width: 100%;
+  padding: 40px;
+  background-color: #f7f9fc; 
+  font-family: 'Inter', sans-serif;
+}
+
+.contentWrapper {
+  max-width: 1100px; 
+  margin: 0 auto; 
+}
+
+
+.welcomeSection {
+  margin-bottom: 50px;
+}
+
+.quickAccessSection {
+  margin-bottom: 50px;
+}
+
+.cardGrid {
+  display: grid; 
+  grid-template-columns: 2fr 1fr; 
+  gap: 16px; 
+}
+
+/* Grid com 2 linhas quando há card de admin */
+.cardGridWithAdmin {
+  display: grid; 
+  grid-template-columns: 2fr 1fr; 
+  grid-template-rows: auto auto;
+  gap: 16px; 
+}
+
+/* Primeira linha: Explore Trilhas (grande) + Admin (pequeno) */
+.cardGridWithAdmin .card:first-child {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.cardGridWithAdmin .adminCard {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* Segunda linha: Certificados + Teste de perfil */
+.cardGridWithAdmin .card:nth-child(3) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.cardGridWithAdmin .card:nth-child(4) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* Card de admin usa as mesmas classes padrão do .card */
+
+
+.welcomeTitle {
+  color: #020f59;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  color: rgba(2, 15, 89, 0.7);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.sectionTitle {
+  color: #111416;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+
+.largeCard {
+  grid-column: span 2; 
+}
+
+.cardTitle {
+  color: #3e3e3e;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.cardDescription {
+  color: rgba(38, 38, 38, 0.7);
+  font-size: 16px;
+  line-height: 1.5;
+  flex-grow: 1; 
+  margin-bottom: 24px;
+}
+
+.button {
+  padding: 12px 24px;
+  background: #020f59;
+  color: #efeffc;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  align-self: flex-start; 
+}
+
+.button:hover {
+  background-color: #1a2a8a;
+}
+
+.trailsSection {
+  margin-bottom: 50px;
+}
+
+.trailsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 24px;
+}
+
+
+.trailCard {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.trailCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.trailImage {
+  width: 100%;
+  height: 220px; 
+  object-fit: cover; 
+  background-color: #eaf2f8; 
+}
+
+.trailContent {
+  padding: 24px;
+}
+
+.trailTitle {
+  color: #14145B;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 29px;
+  margin-bottom: 8px;
+}
+
+.trailDescription {
+  color: #61758A;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+}

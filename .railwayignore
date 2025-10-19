@@ -1,0 +1,73 @@
+# Railway ignore file - files to exclude from deployment
+
+# Development files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker development files
+docker-compose.yml
+docker-compose.override.yml
+dev-docker.sh
+deploy-*.sh
+
+# Documentation
+DEVELOPMENT.md
+README.md
+*.md
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependencies (will be installed during build)
+node_modules
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Build outputs
+build
+dist
+*.egg-info
+
+# Temporary files
+tmp
+temp
