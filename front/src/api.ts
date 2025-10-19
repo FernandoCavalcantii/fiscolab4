@@ -1,8 +1,8 @@
 import axios from "axios";
 import { BackendChallenge, Challenge, QuizQuestion } from './types';
 
-const API_BASE_URL = "http://localhost:8000/api/auth";
-const CHATBOT_API_BASE_URL = "http://localhost:8000/api/chatbot";
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/auth`;
+const CHATBOT_API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/chatbot`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -202,7 +202,7 @@ export interface UserProgressResponse {
 }
 
 const progressApi = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api`,
   headers: {
       "Content-Type": "application/json",
     },
@@ -357,7 +357,7 @@ export const generateQuestions = async (data: {
 };
 
 // Questions/Challenges API (backend questions app)
-const QUESTIONS_API_BASE_URL = "http://localhost:8000";
+const QUESTIONS_API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const questionsApi = axios.create({
   baseURL: QUESTIONS_API_BASE_URL,
   headers: { "Content-Type": "application/json" },

@@ -1,4 +1,11 @@
 services:
+  # PostgreSQL Database
+  - type: pserv
+    name: fiscolab-db
+    plan: free
+    databaseName: fiscolab
+    user: fiscolab_user
+
   # Backend Django API
   - type: web
     name: fiscolab-backend
@@ -45,10 +52,3 @@ services:
     envVars:
       - key: REACT_APP_API_URL
         value: https://fiscolab-backend.onrender.com
-
-  # PostgreSQL Database
-  - type: pserv
-    name: fiscolab-db
-    plan: free
-    databaseName: fiscolab
-    user: fiscolab_user

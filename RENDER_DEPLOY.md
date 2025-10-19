@@ -38,13 +38,11 @@ git push origin main
 
 4. **Variáveis de Ambiente**:
    ```
-   DJANGO_SETTINGS_MODULE=config.settings_production
-   DJANGO_SECRET_KEY=<gerar-chave-secreta>
+   DJANGO_SETTINGS_MODULE=config.settings_simple
+   DJANGO_SECRET_KEY=vxYx1JpDvU2vhwhaen6Bf-b2I1aIDBYpL8sOpVLO46yewzsrbkVgTjlyma03v7xrO2U
    DJANGO_DEBUG=False
    ALLOWED_HOSTS=fiscolab-backend.onrender.com
    OPENAI_API_KEY=<sua-chave-openai>
-   EMAIL_HOST_USER=<seu-email>
-   EMAIL_HOST_PASSWORD=<sua-senha-email>
    ```
 
 ### 4. Deploy do Frontend (React)

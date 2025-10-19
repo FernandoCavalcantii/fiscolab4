@@ -1,16 +1,15 @@
 """
-Django settings for production deployment on Render.
+Django settings for simple deployment on Render (SQLite database).
 """
 
 import os
-import dj_database_url
 from .settings import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production')
 
 # Allow all hosts for Render
 ALLOWED_HOSTS = [
@@ -20,25 +19,13 @@ ALLOWED_HOSTS = [
     '.onrender.com'
 ]
 
-# Database configuration for Render PostgreSQL
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+# Database configuration - Use SQLite for simplicity
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # Fallback to SQLite if DATABASE_URL is not set
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -64,6 +51,10 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Email configuration - DISABLED for testing
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@fiscolab.com'
 
 # Logging configuration for production
 LOGGING = {
