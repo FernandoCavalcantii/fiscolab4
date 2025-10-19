@@ -47,7 +47,7 @@ services:
     buildCommand: |
       cd front
       npm install
-      npm run build
+      REACT_APP_API_URL=https://fiscolab-backend.onrender.com npm run build
     staticPublishPath: ./front/build
     envVars:
       - key: REACT_APP_API_URL
