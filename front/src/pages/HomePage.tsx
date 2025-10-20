@@ -100,10 +100,10 @@ function HomePage() {
               buttonLink="/certificados"
             />
             <DashboardCard
-              title="Teste de perfil"
-              description="Nos ajude a identificar melhor o seu perfil para que possamos oferecer um conteúdo direcionado as suas necessidades."
-              buttonText="Realizar teste"
-              buttonLink="/teste-perfil"
+              title="Desafios"
+              description="Consolide e teste seus conhecimentos adquiridos durante as trilhas."
+              buttonText="Ir para desafios"
+              buttonLink="/desafios"
             />
           </div>
         </section>
