@@ -65,38 +65,38 @@ function App() {
         <Header />
 
         <main>
-          <Routes>
+        <Routes>
           <Route path="/cadastro" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/esqueci-senha" element={<ResetPassword/>}/>
-          <Route path="/reset-password/:uid/:token" element={<ResetPasswordConfirm/>}/>
-            <Route path="/*" element={
-              <RequireAuth>
-                <Route path="/admin" element={<AdminSefaz />} />
-                <Route path="/admin/aprovados" element={<ApprovedChallenges />} />
-                <Route path="/desafios" element={<ChallengeSelectionPage />} />
-                <Route path="/desafio/:id" element={<ChallengeStartPage />} />
-                <Route path="/quiz/:id" element={<QuizPage />} />
-                <Route path="/quiz/resultado/:id" element={<QuizCompletionPage />} />
-                <Route path="/admin/gerador" element={<ChallengeGeneratorPage />} />
-                <Route path="/admin/desafio-gerado" element={<ChallengeGeneratedPage />} />
-                {/* Fim rotas Victor */}
+          <Route path="/esqueci-senha" element={<ResetPassword />} />
+          <Route path="/reset-password/:uid/:token" element={<ResetPasswordConfirm />} />
 
-                <Route path="/" element={<HomePage />} />
-                <Route path="/usuarios" element={<UserList />} />
-                <Route path="/setup" element={<UserSetup />} />
-                <Route path="/perfil" element={<UserProfilePage/>}/>
-                <Route path="/trilhas" element={<ProgramaTrilhasPage />} />
-                <Route path="/trilhas/:programaId" element={<ProgramaTrilhasPage />} />
-                <Route path="/trilha/:trilhaId" element={<TrailsPanel />} />
-                <Route path="/desafios/:trailId" element={<TrailChallengePage />} />
-                <Route path="/certificados" element={<CertificatesPage />} />
-                <Route path="/certificados/quiz/:program/:track" element={<CertificateQuizPage />} />
-                <Route path="/certificados/resultado/:program/:track" element={<CertificateResultPage />} />
-              </RequireAuth>
-            } />
-            {/* Add other routes as needed */}
-          </Routes>
+          {/* Rotas protegidas */}
+          <Route element={<RequireAuth />}>
+            <Route path="/admin" element={<AdminSefaz />} />
+            <Route path="/admin/aprovados" element={<ApprovedChallenges />} />
+            <Route path="/admin/gerador" element={<ChallengeGeneratorPage />} />
+            <Route path="/admin/desafio-gerado" element={<ChallengeGeneratedPage />} />
+
+            <Route path="/" element={<HomePage />} />
+            <Route path="/perfil" element={<UserProfilePage />} />
+            <Route path="/usuarios" element={<UserList />} />
+            <Route path="/setup" element={<UserSetup />} />
+            <Route path="/trilhas" element={<ProgramaTrilhasPage />} />
+            <Route path="/trilhas/:programaId" element={<ProgramaTrilhasPage />} />
+            <Route path="/trilha/:trilhaId" element={<TrailsPanel />} />
+            <Route path="/quiz/:id" element={<QuizPage />} />
+            <Route path="/quiz/resultado/:id" element={<QuizCompletionPage />} />
+            <Route path="/desafios" element={<ChallengeSelectionPage />} />
+            <Route path="/desafio/:id" element={<ChallengeStartPage />} />
+            <Route path="/desafios/:trailId" element={<TrailChallengePage />} />
+            <Route path="/certificados" element={<CertificatesPage />} />
+            <Route path="/certificados/quiz/:program/:track" element={<CertificateQuizPage />} />
+            <Route path="/certificados/resultado/:program/:track" element={<CertificateResultPage />} />
+          </Route>
+
+        </Routes>
+
         </main>
         
         <FloatingButton onClick={handleChatToggle} />

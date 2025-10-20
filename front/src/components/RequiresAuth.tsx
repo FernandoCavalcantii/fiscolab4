@@ -1,12 +1,17 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-export function RequireAuth({ children }: { children: React.ReactNode }) {
+interface RequireAuthProps {
+  children?: React.ReactNode; // children opcional (não usado, mas tipado)
+}
+
+export function RequireAuth(props: RequireAuthProps): JSX.Element {
   const { isLoggedIn } = useAuth();
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
-  return <>{children}</>;
+
+  return <Outlet />;
 }
