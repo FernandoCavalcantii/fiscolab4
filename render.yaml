@@ -15,8 +15,53 @@ services:
       cd back
       pip install -r requirements.txt
       python manage.py migrate
-      python manage.py create_superuser
       python manage.py collectstatic --noinput
+      python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(email='admin@gmail.com').delete(); admin_user = User.objects.create_superuser(email='admin@gmail.com', password='admin12345', first_name='Admin', last_name='User', cpf='000.000.000-00'); admin_user.is_auditor = True; admin_user.save()"
+      python manage.py shell -c "
+from questions.models import Program, Track, Challenge, MultipleChoiceQuestion, ProblemQuestion, Question;
+from decimal import Decimal;
+program, _ = Program.objects.get_or_create(name='PROIND');
+track, _ = Track.objects.get_or_create(program=program, name='Cálculo de Incentivo');
+
+# Desafio 1: Cálculo Básico de Crédito Presumido
+challenge1, _ = Challenge.objects.get_or_create(track=track, title='Desafio 1: Cálculo Básico de Crédito Presumido', difficulty=Question.Difficulty.HARD, defaults={'status': 'APPROVED'});
+ProblemQuestion.objects.filter(challenge=challenge1).delete();
+MultipleChoiceQuestion.objects.filter(challenge=challenge1).delete();
+ProblemQuestion.objects.create(challenge=challenge1, statement='Uma empresa industrial do PROIND realizou vendas no valor de R$ 500.000,00 no mês. Calcule o valor do crédito presumido considerando a alíquota de 12%.', correct_answer=Decimal('60000.00'), justification='O crédito presumido é calculado aplicando 12% sobre o valor das vendas: R$ 500.000,00 × 12% = R$ 60.000,00.');
+ProblemQuestion.objects.create(challenge=challenge1, statement='Uma empresa do PROIND com faturamento trimestral de R$ 1.200.000,00 deseja calcular seu crédito presumido. Se a alíquota aplicável é de 15%, qual será o valor do crédito?', correct_answer=Decimal('180000.00'), justification='Para empresas de grande porte no PROIND, a alíquota de 15% é aplicada: R$ 1.200.000,00 × 15% = R$ 180.000,00.');
+MultipleChoiceQuestion.objects.create(challenge=challenge1, statement='Qual é a alíquota padrão de crédito presumido para empresas do PROIND?', option_a='8%', option_b='10%', option_c='12%', option_d='15%', option_e='18%', correct_option='C', justification='A alíquota padrão de crédito presumido para empresas do PROIND é de 12%.');
+MultipleChoiceQuestion.objects.create(challenge=challenge1, statement='O crédito presumido do PROIND pode ser utilizado para:', option_a='Compensar ICMS a pagar', option_b='Abater do IPI', option_c='Reduzir o IRPJ', option_d='Todas as alternativas anteriores', option_e='Apenas A e B', correct_option='A', justification='O crédito presumido do PROIND é utilizado especificamente para compensar ICMS a pagar.');
+MultipleChoiceQuestion.objects.create(challenge=challenge1, statement='Uma empresa com vendas de R$ 300.000,00 terá direito a crédito presumido de:', option_a='R$ 30.000,00', option_b='R$ 36.000,00', option_c='R$ 42.000,00', option_d='R$ 48.000,00', option_e='R$ 54.000,00', correct_option='B', justification='R$ 300.000,00 × 12% = R$ 36.000,00.');
+MultipleChoiceQuestion.objects.create(challenge=challenge1, statement='O PROIND é um programa de incentivo fiscal de qual estado?', option_a='Bahia', option_b='Ceará', option_c='Pernambuco', option_d='Rio Grande do Norte', option_e='Sergipe', correct_option='C', justification='O PROIND é o Programa de Incentivo à Indústria do Estado de Pernambuco.');
+MultipleChoiceQuestion.objects.create(challenge=challenge1, statement='Para ter direito ao crédito presumido, a empresa deve:', option_a='Estar localizada em Pernambuco', option_b='Ter atividade industrial', option_c='Atender aos requisitos do programa', option_d='Todas as alternativas anteriores', option_e='Apenas A e B', correct_option='D', justification='Para ter direito ao crédito presumido, a empresa deve estar localizada em Pernambuco, ter atividade industrial e atender aos requisitos do programa.');
+
+# Desafio 2: Cálculo Avançado por Setor
+challenge2, _ = Challenge.objects.get_or_create(track=track, title='Desafio 2: Cálculo Avançado por Setor', difficulty=Question.Difficulty.HARD, defaults={'status': 'APPROVED'});
+ProblemQuestion.objects.filter(challenge=challenge2).delete();
+MultipleChoiceQuestion.objects.filter(challenge=challenge2).delete();
+ProblemQuestion.objects.create(challenge=challenge2, statement='Uma empresa do setor farmacoquímico, enquadrada no PROIND, teve vendas de R$ 800.000,00 no trimestre. Calcule o crédito presumido considerando a alíquota específica de 18%.', correct_answer=Decimal('144000.00'), justification='Para o setor farmacoquímico no PROIND, a alíquota de 18% é aplicada: R$ 800.000,00 × 18% = R$ 144.000,00.');
+ProblemQuestion.objects.create(challenge=challenge2, statement='Uma empresa de grande porte do PROIND com faturamento anual de R$ 5.000.000,00 deseja calcular seu crédito presumido. Se a alíquota aplicável é de 20% para empresas de grande porte, qual será o valor do crédito?', correct_answer=Decimal('1000000.00'), justification='Para empresas de grande porte no PROIND, a alíquota de 20% é aplicada: R$ 5.000.000,00 × 20% = R$ 1.000.000,00.');
+MultipleChoiceQuestion.objects.create(challenge=challenge2, statement='Qual setor tem alíquota diferenciada no PROIND?', option_a='Têxtil', option_b='Farmacoquímico', option_c='Alimentício', option_d='Automotivo', option_e='Todas as alternativas', correct_option='B', justification='O setor farmacoquímico tem alíquota diferenciada de 18% no PROIND.');
+MultipleChoiceQuestion.objects.create(challenge=challenge2, statement='A alíquota de 20% no PROIND é aplicada para:', option_a='Pequenas empresas', option_b='Médias empresas', option_c='Grandes empresas', option_d='Empresas exportadoras', option_e='Empresas importadoras', correct_option='C', justification='A alíquota de 20% é aplicada para grandes empresas no PROIND.');
+MultipleChoiceQuestion.objects.create(challenge=challenge2, statement='Uma empresa farmacoquímica com vendas de R$ 1.000.000,00 terá crédito presumido de:', option_a='R$ 120.000,00', option_b='R$ 150.000,00', option_c='R$ 180.000,00', option_d='R$ 200.000,00', option_e='R$ 220.000,00', correct_option='C', justification='R$ 1.000.000,00 × 18% = R$ 180.000,00.');
+MultipleChoiceQuestion.objects.create(challenge=challenge2, statement='O crédito presumido do PROIND tem prazo de utilização de:', option_a='12 meses', option_b='24 meses', option_c='36 meses', option_d='48 meses', option_e='60 meses', correct_option='C', justification='O crédito presumido do PROIND tem prazo de utilização de 36 meses.');
+MultipleChoiceQuestion.objects.create(challenge=challenge2, statement='Para empresas de grande porte, a alíquota de crédito presumido é:', option_a='12%', option_b='15%', option_c='18%', option_d='20%', option_e='25%', correct_option='D', justification='Para empresas de grande porte, a alíquota de crédito presumido é de 20%.');
+
+# Desafio 3: Cálculo Complexo com Múltiplas Variáveis
+challenge3, _ = Challenge.objects.get_or_create(track=track, title='Desafio 3: Cálculo Complexo com Múltiplas Variáveis', difficulty=Question.Difficulty.HARD, defaults={'status': 'APPROVED'});
+ProblemQuestion.objects.filter(challenge=challenge3).delete();
+MultipleChoiceQuestion.objects.filter(challenge=challenge3).delete();
+ProblemQuestion.objects.create(challenge=challenge3, statement='Uma empresa do PROIND teve vendas de R$ 2.500.000,00 no primeiro semestre e R$ 3.000.000,00 no segundo semestre. Calcule o crédito presumido total considerando alíquotas de 12% e 15% respectivamente.', correct_answer=Decimal('750000.00'), justification='Primeiro semestre: R$ 2.500.000,00 × 12% = R$ 300.000,00. Segundo semestre: R$ 3.000.000,00 × 15% = R$ 450.000,00. Total: R$ 300.000,00 + R$ 450.000,00 = R$ 750.000,00.');
+ProblemQuestion.objects.create(challenge=challenge3, statement='Uma empresa multinacional do PROIND com faturamento de R$ 10.000.000,00 e alíquota de 25% para multinacionais, calcule o crédito presumido.', correct_answer=Decimal('2500000.00'), justification='Para multinacionais no PROIND, a alíquota de 25% é aplicada: R$ 10.000.000,00 × 25% = R$ 2.500.000,00.');
+MultipleChoiceQuestion.objects.create(challenge=challenge3, statement='Empresas multinacionais no PROIND têm alíquota de:', option_a='15%', option_b='18%', option_c='20%', option_d='25%', option_e='30%', correct_option='D', justification='Empresas multinacionais no PROIND têm alíquota de 25%.');
+MultipleChoiceQuestion.objects.create(challenge=challenge3, statement='O crédito presumido pode ser utilizado para compensar:', option_a='ICMS', option_b='IPI', option_c='PIS/COFINS', option_d='Apenas ICMS', option_e='ICMS e IPI', correct_option='A', justification='O crédito presumido do PROIND é utilizado especificamente para compensar ICMS.');
+MultipleChoiceQuestion.objects.create(challenge=challenge3, statement='Uma empresa com vendas de R$ 4.000.000,00 e alíquota de 18% terá crédito de:', option_a='R$ 600.000,00', option_b='R$ 650.000,00', option_c='R$ 700.000,00', option_d='R$ 720.000,00', option_e='R$ 750.000,00', correct_option='D', justification='R$ 4.000.000,00 × 18% = R$ 720.000,00.');
+MultipleChoiceQuestion.objects.create(challenge=challenge3, statement='O PROIND foi criado em:', option_a='1990', option_b='1995', option_c='2000', option_d='2005', option_e='2010', correct_option='B', justification='O PROIND foi criado em 1995 pelo Estado de Pernambuco.');
+MultipleChoiceQuestion.objects.create(challenge=challenge3, statement='Para ter direito ao PROIND, a empresa deve investir no mínimo:', option_a='R$ 100.000,00', option_b='R$ 500.000,00', option_c='R$ 1.000.000,00', option_d='R$ 2.000.000,00', option_e='R$ 5.000.000,00', correct_option='C', justification='Para ter direito ao PROIND, a empresa deve investir no mínimo R$ 1.000.000,00.');
+
+print('✅ 3 Desafios PROIND criados com sucesso!');
+print('📊 Total: 6 questões problema + 15 questões múltipla escolha');
+"
     startCommand: |
       cd back
       python manage.py runserver 0.0.0.0:$PORT
