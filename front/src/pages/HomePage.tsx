@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import styles from './HomePage.module.css';
 import { getCurrentUser } from '../api';
 import TrailCard from '../components/cards/TrailCard';
@@ -23,9 +24,9 @@ const DashboardCard = ({ title, description, buttonText, buttonLink, isLarge = f
     <div className={cardClasses}>
       <h3 className={styles.cardTitle}>{title}</h3>
       <p className={styles.cardDescription}>{description}</p>
-      <a href={buttonLink} className={styles.button}>
+      <Link to={buttonLink} className={styles.button}>
         {buttonText}
-      </a>
+      </Link>
     </div>
   );
 };
