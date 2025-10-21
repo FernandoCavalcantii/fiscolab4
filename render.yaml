@@ -1,11 +1,4 @@
 services:
-  # PostgreSQL Database
-  - type: pserv
-    name: fiscolab-db
-    plan: free
-    databaseName: fiscolab
-    user: fiscolab_user
-
   # Backend Django API
   - type: web
     name: fiscolab-backend
@@ -15,8 +8,6 @@ services:
       cd back
       pip install -r requirements.txt
       python manage.py migrate
-      python manage.py ensure_admin
-      python manage.py create_superuser
       python manage.py collectstatic --noinput
     startCommand: |
       cd back
@@ -40,3 +31,24 @@ services:
         sync: false
       - key: EMAIL_HOST_PASSWORD
         sync: false
+
+  # Frontend React
+  - type: web
+    name: fiscolab-frontend
+    env: static
+    plan: free
+    buildCommand: |
+      cd front
+      npm install
+      npm run build
+    staticPublishPath: ./front/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://fiscolab-backend.onrender.com
+
+  # PostgreSQL Database
+  - type: pserv
+    name: fiscolab-db
+    plan: free
+    databaseName: fiscolab
+    user: fiscolab_user

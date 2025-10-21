@@ -68,37 +68,28 @@ class DocumentExtractor:
             List[Document]: List of extracted documents
         """
         documents = []
-        max_files = 2  # Further reduce to just 2 files for memory optimization
+        # ORIGINAL CONFIGURATION - process all files like it was working
         processed_files = 0
         
         if not os.path.isdir(self.base_directory):
             logger.error(f"Diretório base não encontrado: {self.base_directory}")
             return documents
             
-        logger.info(f"Iniciando extração de PDFs em: {self.base_directory} (limitado a {max_files} arquivos)")
+        logger.info(f"Iniciando extração de PDFs em: {self.base_directory} (ORIGINAL - all files)")
         
-        # Recursively traverse the base directory
+        # Recursively traverse the base directory - ORIGINAL CONFIGURATION
         for root, dirs, files in os.walk(self.base_directory):
-            if processed_files >= max_files:
-                break
-                
             for file_name in files:
-                if processed_files >= max_files:
-                    break
-                    
                 if file_name.lower().endswith('.pdf'):
                     file_path = os.path.join(root, file_name)
                     try:
-                        logger.info(f"Processando PDF ({processed_files + 1}/{max_files}): {file_path}")
+                        logger.info(f"Processando PDF: {file_path}")
                         
                         # Load the PDF document
                         loader = PyPDFLoader(file_path)
                         pdf_documents = loader.load()
                         
-                        # Limit pages per document to save memory
-                        if len(pdf_documents) > 5:  # Further reduce to 5 pages
-                            pdf_documents = pdf_documents[:5]  # Limit to first 5 pages
-                            logger.info(f"Limited to first 5 pages of {file_name}")
+                        # ORIGINAL CONFIGURATION - no page limits
                         
                         # Add additional metadata
                         for doc in pdf_documents:
