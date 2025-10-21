@@ -30,29 +30,30 @@ class DocumentExtractor:
         """
         Perform OCR on a PDF file and return a list of page Documents.
         Uses Tesseract with Portuguese language if available.
-        Optimized for memory usage.
+        Heavily optimized for memory usage.
         """
         try:
             logger.info(f"Running OCR fallback for: {file_path}")
-            # Reduced DPI to save memory
-            images = convert_from_path(file_path, dpi=150, first_page=1, last_page=10)  # Limit to first 10 pages
+            # Heavily reduced DPI and pages to save memory
+            images = convert_from_path(file_path, dpi=75, first_page=1, last_page=3)  # Limit to first 3 pages only
             ocr_docs: List[Document] = []
             for page_index, image in enumerate(images):
-                # Process image in smaller chunks to save memory
-                text = pytesseract.image_to_string(image, lang="por")
-                page_doc = Document(
-                    page_content=text or "",
-                    metadata={
-                        'source': file_path,
-                        'file_name': os.path.basename(file_path),
-                        'directory': os.path.dirname(file_path),
-                        'document_type': 'pdf',
-                        'extraction': 'ocr',
-                        'page_index': page_index
-                    }
-                )
-                ocr_docs.append(page_doc)
-                # Clear image from memory
+                # Process image with memory-optimized settings
+                text = pytesseract.image_to_string(image, lang="por", config='--psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?()[]{}":; ')
+                if text.strip():  # Only add if text was extracted
+                    page_doc = Document(
+                        page_content=text,
+                        metadata={
+                            'source': file_path,
+                            'file_name': os.path.basename(file_path),
+                            'directory': os.path.dirname(file_path),
+                            'document_type': 'pdf',
+                            'extraction': 'ocr',
+                            'page_index': page_index
+                        }
+                    )
+                    ocr_docs.append(page_doc)
+                # Clear image from memory immediately
                 del image
             logger.info(f"OCR produced {len(ocr_docs)} pages for {file_path}")
             return ocr_docs
@@ -103,8 +104,8 @@ class DocumentExtractor:
                         
                         # If text extraction produced too little content, try OCR fallback
                         total_chars = sum(len(d.page_content.strip()) for d in pdf_documents)
-                        if total_chars < 50:  # heuristic threshold
-                            logger.warning(f"Low text content detected ({total_chars} chars). Attempting OCR for: {file_name}")
+                        if total_chars < 10:  # Very restrictive threshold to avoid unnecessary OCR
+                            logger.warning(f"Extremely low text content detected ({total_chars} chars). Attempting OCR for: {file_name}")
                             ocr_docs = self._ocr_pdf(file_path)
                             if ocr_docs:
                                 pdf_documents = ocr_docs

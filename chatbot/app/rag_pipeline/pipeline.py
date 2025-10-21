@@ -21,8 +21,8 @@ class RAGPipeline:
                  documents_path: str = "chatbot/app/data/sefaz_documents",
                  collection_name: str = "sefaz_docs",
                  persist_directory: str = "data/chroma_db",
-                 chunk_size: int = 1000,
-                 chunk_overlap: int = 200):
+                 chunk_size: int = 800,  # Reduced for memory optimization
+                 chunk_overlap: int = 100):  # Reduced for memory optimization
         """
         Initializes the RAG pipeline
         
@@ -93,11 +93,34 @@ class RAGPipeline:
             
             logger.info(f"Created {len(chunks)} chunks")
             
-            # Step 3: Embedding
+            # Step 3: Embedding (with memory optimization)
             logger.info("Step 3: Creating embeddings and vector store...")
-            vector_store = self.embedding_manager.create_vector_store(chunks)
+            
+            # Process chunks in smaller batches to save memory
+            batch_size = 50  # Process 50 chunks at a time
+            all_chunks_processed = []
+            
+            for i in range(0, len(chunks), batch_size):
+                batch = chunks[i:i + batch_size]
+                logger.info(f"Processing embedding batch {i//batch_size + 1}/{(len(chunks)-1)//batch_size + 1}")
+                
+                # Create vector store for this batch
+                batch_vector_store = self.embedding_manager.create_vector_store(batch)
+                if not batch_vector_store:
+                    logger.error(f"Error creating vector store for batch {i//batch_size + 1}")
+                    return False
+                
+                all_chunks_processed.extend(batch)
+                
+                # Clear batch from memory
+                del batch
+                import gc
+                gc.collect()
+            
+            # Create final vector store with all processed chunks
+            vector_store = self.embedding_manager.create_vector_store(all_chunks_processed)
             if not vector_store:
-                logger.error("Error creating vector store")
+                logger.error("Error creating final vector store")
                 return False
             
             logger.info("Vector store created successfully")

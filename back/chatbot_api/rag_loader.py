@@ -68,13 +68,13 @@ def get_rag_pipeline():
                 except Exception as e:
                     logger.warning(f"Could not remove existing vector store: {e}")
             
-            # Create the instance with updated parameters
-            logger.info("Creating RAGPipeline instance with OCR support...")
+            # Create the instance with memory-optimized parameters
+            logger.info("Creating RAGPipeline instance with memory optimization...")
             _rag_pipeline_instance = RAGPipeline(
                 documents_path=documents_path,
                 persist_directory=persist_directory,
-                chunk_size=1000,
-                chunk_overlap=200
+                chunk_size=600,  # Reduced for memory optimization
+                chunk_overlap=50   # Reduced for memory optimization
             )
             
             # Build the knowledge base with force rebuild
