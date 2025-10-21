@@ -9,7 +9,8 @@ import DesafiosCard from '../components/common/DesafiosCard';
 import TesteCertificacaoCard from '../components/common/TesteCertificacaoCard';
 import styles from './TrailsPanel.module.css';
 
-const RenderList = ({ items, key }: { items: ItemDaListaAninhada[], key?: string | number }) => {
+
+const RenderList = ({ items }: { items: ItemDaListaAninhada[] }) => {
   return (
     <ul className={styles.mainList}>
       {items.map((item, index) => {
@@ -34,9 +35,6 @@ const extractTrailNumber = (trailId: string): number => {
 
 const TrailsPanel = () => { 
   const { trilhaId } = useParams();
-
-  console.log("ID que eu li da URL:", trilhaId);
-  console.log("Estou a procurar por este ID na seguinte lista de trilhas:", trilhas);
 
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('conteudo');
@@ -87,22 +85,27 @@ const TrailsPanel = () => {
   const videoAtual = videosDasTrilhas[trilhaAtual.id];
 
   const handleChallengeClick = (challengeType: string) => {
-    console.log(`Iniciando desafio: ${challengeType}`);
+    console.log(`Iniciando desafio: ${challengeType} na trilha ${trilhaAtual.id}`);
+    navigate(`/desafios/${trilhaAtual.id}`);
   };
 
   const handleTestClick = () => {
     console.log('Iniciando teste de certificação');
+    navigate(`/certificados/quiz/${trilhaAtual.programa}/${trilhaAtual.id}`);
   };
+
+  
 
   return (
     <div className={styles.container}>
       <button className={styles.backButton} onClick={() => navigate(-1)}>&larr;</button>
-      
+
       <TrackDetailHeader
-        title={trilhaAtual.titulo}
-        description={trilhaAtual.descricaoHeader}
-        programa={trilhaAtual.programa}
-      />
+      trilhaId={trilhaAtual.id} 
+      title={trilhaAtual.titulo}
+      description={trilhaAtual.descricaoHeader}
+      programa={trilhaAtual.programa}
+    />
 
       <div className={styles.layoutContainer}>
         <main className={styles.mainContent}>
@@ -198,7 +201,6 @@ const TrailsPanel = () => {
         <aside className={styles.sidebar}>
           <DesafiosCard 
             title="Desafios"
-            number="2"
             description="Teste os seus conhecimentos da trilha com exercícios práticos!"
             buttonText="Fazer simulados"
             onButtonClick={() => handleChallengeClick('conhecimento')}
