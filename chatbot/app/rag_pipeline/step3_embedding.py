@@ -46,9 +46,17 @@ class EmbeddingManager:
         try:
             self.embeddings = HuggingFaceEmbeddings(
                 model_name=self.embedding_model,
-                model_kwargs={'device': 'cpu'} # Force CPU usage
+                model_kwargs={
+                    'device': 'cpu',  # Force CPU usage
+                    'torch_dtype': 'float16',  # Use half precision to save memory
+                    'trust_remote_code': True
+                },
+                encode_kwargs={
+                    'normalize_embeddings': True,  # Normalize embeddings for better performance
+                    'batch_size': 8  # Smaller batch size to reduce memory usage
+                }
             )
-            logger.info(f"Local embedding model initialized: {self.embedding_model}")
+            logger.info(f"Local embedding model initialized with memory optimizations: {self.embedding_model}")
         except Exception as e:
             logger.error(f"Error initializing embedding model: {e}")
             raise
