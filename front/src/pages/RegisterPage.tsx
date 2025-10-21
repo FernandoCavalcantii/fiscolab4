@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from './RegisterPage.module.css';
-import { registerUser, loginUser, checkAdminExists } from "../api";
+import { registerUser, loginUser } from "../api";
 import { useAuth } from '../contexts/AuthContext';
 
 const RegisterPage = () => {
@@ -17,22 +17,6 @@ const RegisterPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showAdminOption, setShowAdminOption] = useState(false);
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const response = await checkAdminExists();
-        setShowAdminOption(!response.admin_exists);
-      } catch (error) {
-        console.error('Erro ao verificar se existe admin:', error);
-        // Em caso de erro, não mostrar a opção de admin por segurança
-        setShowAdminOption(false);
-      }
-    };
-    
-    checkAdmin();
-  }, []);
 
   const splitFullName = (fullName: string) => {
     const nameParts = fullName.trim().split(' ');
@@ -188,21 +172,19 @@ const RegisterPage = () => {
           required 
         />
         
-        {showAdminOption && (
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-            <input 
-              type="checkbox" 
-              id="isAdmin"
-              checked={isAdmin}
-              onChange={e => setIsAdmin(e.target.checked)}
-              disabled={loading}
-              style={{ marginRight: '10px' }}
-            />
-            <label htmlFor="isAdmin" style={{ color: '#333', fontSize: '14px' }}>
-              Cadastrar como administrador do sistema
-            </label>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+          <input 
+            type="checkbox" 
+            id="isAdmin"
+            checked={isAdmin}
+            onChange={e => setIsAdmin(e.target.checked)}
+            disabled={loading}
+            style={{ marginRight: '10px' }}
+          />
+          <label htmlFor="isAdmin" style={{ color: '#333', fontSize: '14px' }}>
+            Cadastrar como administrador do sistema
+          </label>
+        </div>
         
         <button 
           type="submit" 
