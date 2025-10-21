@@ -51,7 +51,15 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         return validated_data
 
     def create(self, validated_data):
+        # Remover campos que não devem ser passados para o modelo
         validated_data.pop('re_password', None)
+        
+        # Garantir que is_superuser seja tratado corretamente
+        is_superuser = validated_data.pop('is_superuser', False)
+        if is_superuser:
+            validated_data['is_superuser'] = True
+            validated_data['is_staff'] = True  # Superuser deve ser staff também
+        
         return super().create(validated_data)
 
     def validate_cpf(self, value):
