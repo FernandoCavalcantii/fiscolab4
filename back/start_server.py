@@ -39,11 +39,12 @@ def start_server():
         '--config', 'gunicorn.conf.py',
         '--bind', f'0.0.0.0:{port}',
         '--workers', '1',
-        '--timeout', '300',
+        '--timeout', '600',  # 10 minutes timeout
         '--max-requests', '1000',
         '--max-requests-jitter', '50',
-        '--preload-app',
-        '--worker-tmp-dir', '/dev/shm'
+        '--worker-tmp-dir', '/dev/shm',
+        '--worker-class', 'sync',
+        '--worker-connections', '1000'
     ]
     
     logger.info(f"Starting server with command: {' '.join(cmd)}")

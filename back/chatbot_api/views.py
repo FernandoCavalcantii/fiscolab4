@@ -335,9 +335,21 @@ class QuestionGenerationView(APIView):
 @api_view(['GET'])
 def health_check(request):
     """Health check endpoint"""
-    rag_status = "initialized" if is_initialized() else "not_initialized"
+    from .rag_loader import _initialization_in_progress, _initialization_attempted
+    
+    if is_initialized():
+        rag_status = "initialized"
+    elif _initialization_in_progress:
+        rag_status = "initializing"
+    elif _initialization_attempted:
+        rag_status = "failed"
+    else:
+        rag_status = "not_started"
+    
     return Response({
         "status": "healthy", 
         "service": "chatbot-api",
-        "rag_pipeline": rag_status
+        "rag_pipeline": rag_status,
+        "initialization_in_progress": _initialization_in_progress,
+        "initialization_attempted": _initialization_attempted
     }, status=status.HTTP_200_OK)

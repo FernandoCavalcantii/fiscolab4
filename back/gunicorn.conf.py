@@ -10,7 +10,7 @@ backlog = 2048
 workers = 1  # Single worker to avoid memory issues
 worker_class = "sync"
 worker_connections = 1000
-timeout = 300  # 5 minutes timeout
+timeout = 600  # 10 minutes timeout
 keepalive = 2
 
 # Restart workers after this many requests, to prevent memory leaks

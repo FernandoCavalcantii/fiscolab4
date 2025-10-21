@@ -68,7 +68,7 @@ class DocumentExtractor:
             List[Document]: List of extracted documents
         """
         documents = []
-        max_files = 5  # Limit number of files to process for memory optimization
+        max_files = 2  # Further reduce to just 2 files for memory optimization
         processed_files = 0
         
         if not os.path.isdir(self.base_directory):
@@ -96,9 +96,9 @@ class DocumentExtractor:
                         pdf_documents = loader.load()
                         
                         # Limit pages per document to save memory
-                        if len(pdf_documents) > 20:
-                            pdf_documents = pdf_documents[:20]  # Limit to first 20 pages
-                            logger.info(f"Limited to first 20 pages of {file_name}")
+                        if len(pdf_documents) > 5:  # Further reduce to 5 pages
+                            pdf_documents = pdf_documents[:5]  # Limit to first 5 pages
+                            logger.info(f"Limited to first 5 pages of {file_name}")
                         
                         # Add additional metadata
                         for doc in pdf_documents:

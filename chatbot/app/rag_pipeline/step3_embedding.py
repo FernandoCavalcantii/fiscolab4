@@ -22,7 +22,7 @@ class EmbeddingManager:
     def __init__(self, 
                  collection_name: str = "sefaz_docs",
                  persist_directory: str = "data/chroma_db",
-                 embedding_model: str = "neuralmind/bert-base-portuguese-cased"):
+                 embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"):
         """
         Initialize the embedding manager
         
@@ -44,22 +44,34 @@ class EmbeddingManager:
         #     logger.info(f"Modelo de embedding inicializado: {embedding_model}")
         
         try:
+            # Use a much lighter embedding model for faster initialization
             self.embeddings = HuggingFaceEmbeddings(
                 model_name=self.embedding_model,
                 model_kwargs={
                     'device': 'cpu',  # Force CPU usage
-                    'torch_dtype': 'float16',  # Use half precision to save memory
                     'trust_remote_code': True
                 },
                 encode_kwargs={
                     'normalize_embeddings': True,  # Normalize embeddings for better performance
-                    'batch_size': 8  # Smaller batch size to reduce memory usage
+                    'batch_size': 4,  # Very small batch size
+                    'convert_to_tensor': False  # Don't convert to tensor to save memory
                 }
             )
-            logger.info(f"Local embedding model initialized with memory optimizations: {self.embedding_model}")
+            logger.info(f"Lightweight embedding model initialized: {self.embedding_model}")
         except Exception as e:
             logger.error(f"Error initializing embedding model: {e}")
-            raise
+            # Try with an even lighter fallback model
+            try:
+                logger.info("Trying fallback embedding model...")
+                self.embeddings = HuggingFaceEmbeddings(
+                    model_name="sentence-transformers/all-MiniLM-L6-v2",
+                    model_kwargs={'device': 'cpu'},
+                    encode_kwargs={'batch_size': 2}
+                )
+                logger.info("Fallback embedding model initialized successfully")
+            except Exception as e2:
+                logger.error(f"Fallback embedding model also failed: {e2}")
+                raise
     
     def create_vector_store(self, chunks: List[Document]) -> Optional[Chroma]:
         """
