@@ -28,13 +28,14 @@ class CustomUserCreateSerializer(UserCreateSerializer):
     last_name = serializers.CharField(required=True, max_length=150)
     cpf = serializers.CharField(required=True, max_length=14)  
     re_password = serializers.CharField(write_only=True)  
+    is_superuser = serializers.BooleanField(required=False, default=False)
     
     class Meta(UserCreateSerializer.Meta):
         model = CustomUser
         fields = [
             'id', 'email', 'first_name', 'last_name', 'cpf', 
             'password', 're_password', 
-            'linkedin_url', 'interest_area', 'field_of_work', 'is_auditor'
+            'linkedin_url', 'interest_area', 'field_of_work', 'is_auditor', 'is_superuser'
         ]
 
     def validate(self, attrs):

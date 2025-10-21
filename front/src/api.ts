@@ -11,6 +11,15 @@ const api = axios.create({
   },
 });
 
+export const checkAdminExists = async () => {
+  try {
+    const response = await api.get("/check-admin/");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const registerUser = async (data: {
   first_name: string;  
   last_name: string;     
@@ -19,6 +28,7 @@ export const registerUser = async (data: {
   cpf: string;
   password: string;
   re_password: string;
+  is_superuser?: boolean;
 }) => {
   try {
     const response = await api.post("/register/", data);

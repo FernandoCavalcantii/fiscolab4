@@ -25,11 +25,29 @@ class UserViewSet(viewsets.ModelViewSet):
 class EmailTokenObtainPairView(TokenObtainPairView):
     serializer_class = EmailTokenObtainPairSerializer
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def check_admin_exists(request):
+    """Verifica se já existe um administrador no sistema"""
+    admin_exists = CustomUser.objects.filter(is_superuser=True).exists()
+    return Response({'admin_exists': admin_exists}, status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
     print("=== CHEGOU NA VIEW CUSTOMIZADA ===")
     print("Dados recebidos:", request.data)
+    
+    # Verificar se está tentando criar um admin
+    is_admin = request.data.get('is_superuser', False)
+    if is_admin:
+        # Verificar se já existe um admin
+        if CustomUser.objects.filter(is_superuser=True).exists():
+            return Response(
+                {'error': 'Já existe um administrador cadastrado no sistema.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
     serializer = CustomUserCreateSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
