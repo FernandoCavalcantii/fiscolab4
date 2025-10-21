@@ -13,8 +13,8 @@ class DocumentChunker:
     """Class to divide documents into smaller chunks"""
     
     def __init__(self, 
-                 chunk_size: int = 1500,
-                 chunk_overlap: int = 200,
+                 chunk_size: int = 800,  # Reduced chunk size for memory optimization
+                 chunk_overlap: int = 100,  # Reduced overlap for memory optimization
                  separators: List[str] = None):
         """
         Initialize document chunker
@@ -60,26 +60,32 @@ class DocumentChunker:
         
         for i, doc in enumerate(documents):
             try:
+                # Process documents in smaller batches to save memory
+                if i % 5 == 0:  # Process every 5 documents and clear memory
+                    import gc
+                    gc.collect()
+                
                 # Divide the document into chunks
                 chunks = self.text_splitter.split_documents([doc])
                 
-                # Add specific chunking metadata
+                # Add specific chunking metadata (minimal to save memory)
                 for j, chunk in enumerate(chunks):
                     chunk.metadata.update({
                         'chunk_id': f"{i}_{j}",
-                        'original_document_index': i,
                         'chunk_index': j,
-                        'total_chunks_in_doc': len(chunks),
                         'chunk_size': len(chunk.page_content)
                     })
                 
                 if len(chunks) == 0:
                     logger.warning(
-                        f"Document {i+1} produced 0 chunks | file_name={doc.metadata.get('file_name')} | source={doc.metadata.get('source')}"
+                        f"Document {i+1} produced 0 chunks | file_name={doc.metadata.get('file_name')}"
                     )
                 
                 all_chunks.extend(chunks)
                 logger.info(f"  - Document {i+1}: {len(chunks)} chunks created")
+                
+                # Clear document from memory after processing
+                del doc
                 
             except Exception as e:
                 logger.error(f"Error chunking document {i}: {e}")

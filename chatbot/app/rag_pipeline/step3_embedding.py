@@ -22,7 +22,7 @@ class EmbeddingManager:
     def __init__(self, 
                  collection_name: str = "sefaz_docs",
                  persist_directory: str = "data/chroma_db",
-                 embedding_model: str = "neuralmind/bert-base-portuguese-cased"):
+                 embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"):
         """
         Initialize the embedding manager
         
@@ -46,7 +46,14 @@ class EmbeddingManager:
         try:
             self.embeddings = HuggingFaceEmbeddings(
                 model_name=self.embedding_model,
-                model_kwargs={'device': 'cpu'} # Force CPU usage
+                model_kwargs={
+                    'device': 'cpu',
+                    'trust_remote_code': False
+                },
+                encode_kwargs={
+                    'normalize_embeddings': True,
+                    'batch_size': 16  # Process in smaller batches
+                }
             )
             logger.info(f"Local embedding model initialized: {self.embedding_model}")
         except Exception as e:
