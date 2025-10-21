@@ -46,9 +46,11 @@ class ChatbotChatView(APIView):
             pipeline = get_rag_pipeline()
             
             if pipeline is None:
-                # Fallback response if it can't initialize
-                response = f"Error processing. Automatic message for test."
-                return Response({'response': response, 'confidence': 0.8}, status=status.HTTP_200_OK)
+                # Fallback for when pipeline is not initialized
+                return Response(
+                    {"error": "RAG pipeline not initialized"}, 
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
             
             # Get response from chatbot
             response = pipeline.chat(user_message)
@@ -335,21 +337,9 @@ class QuestionGenerationView(APIView):
 @api_view(['GET'])
 def health_check(request):
     """Health check endpoint"""
-    from .rag_loader import _initialization_in_progress, _initialization_attempted
-    
-    if is_initialized():
-        rag_status = "initialized"
-    elif _initialization_in_progress:
-        rag_status = "initializing"
-    elif _initialization_attempted:
-        rag_status = "failed"
-    else:
-        rag_status = "not_started"
-    
+    rag_status = "initialized" if is_initialized() else "not_initialized"
     return Response({
         "status": "healthy", 
         "service": "chatbot-api",
-        "rag_pipeline": rag_status,
-        "initialization_in_progress": _initialization_in_progress,
-        "initialization_attempted": _initialization_attempted
+        "rag_pipeline": rag_status
     }, status=status.HTTP_200_OK)

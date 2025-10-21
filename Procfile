@@ -1,1 +1,1 @@
-web: cd back && python start_server.py
+web: cd back && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
