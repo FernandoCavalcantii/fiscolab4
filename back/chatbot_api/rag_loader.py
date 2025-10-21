@@ -20,13 +20,19 @@ logger = logging.getLogger(__name__)
 
 # Global variable to store the unique instance
 _rag_pipeline_instance = None
+_initialization_attempted = False
 
 def get_rag_pipeline():
     """
     Returns the unique instance of the RAGPipeline.
-    If it doesn't exist, creates a new instance with forced rebuild.
+    If it doesn't exist, creates a new instance with optimized settings.
     """
-    global _rag_pipeline_instance
+    global _rag_pipeline_instance, _initialization_attempted
+    
+    # If initialization already failed, return None to avoid repeated attempts
+    if _initialization_attempted and _rag_pipeline_instance is None:
+        logger.warning("RAG pipeline initialization previously failed, skipping retry")
+        return None
     
     if _rag_pipeline_instance is None:
         try:
@@ -58,28 +64,38 @@ def get_rag_pipeline():
             except Exception as e:
                 logger.error(f"Error listing files: {e}")
             
-            # Force cleanup of existing vector store to ensure fresh rebuild with OCR
+            # Check if vector store already exists
             persist_directory = os.path.join(project_root, "data", "chroma_db")
-            if os.path.exists(persist_directory):
-                logger.info(f"Removing existing vector store at {persist_directory}")
-                try:
-                    shutil.rmtree(persist_directory)
-                    logger.info("Existing vector store removed successfully")
-                except Exception as e:
-                    logger.warning(f"Could not remove existing vector store: {e}")
+            force_rebuild = False
             
-            # Create the instance with updated parameters
-            logger.info("Creating RAGPipeline instance with OCR support...")
+            # Only rebuild if vector store doesn't exist or is corrupted
+            if not os.path.exists(persist_directory):
+                logger.info("Vector store not found, will create new one")
+                force_rebuild = True
+            else:
+                logger.info("Vector store exists, will try to load existing one")
+                force_rebuild = False
+
+            # Create the instance with optimized parameters
+            logger.info("Creating RAGPipeline instance with optimized settings...")
             _rag_pipeline_instance = RAGPipeline(
                 documents_path=documents_path,
                 persist_directory=persist_directory,
-                chunk_size=1000,
-                chunk_overlap=200
+                chunk_size=500,  # Reduced chunk size for better memory usage
+                chunk_overlap=100   # Reduced overlap
             )
             
-            # Build the knowledge base with force rebuild
-            logger.info("Building knowledge base with OCR support...")
-            success = _rag_pipeline_instance.build_knowledge_base(force_rebuild=True)
+            # Try to load existing knowledge base first
+            if not force_rebuild:
+                logger.info("Attempting to load existing knowledge base...")
+                success = _rag_pipeline_instance.load_knowledge_base()
+                if success:
+                    logger.info("✅ RAGPipeline loaded existing knowledge base successfully")
+                    return _rag_pipeline_instance
+            
+            # If loading failed, build new knowledge base
+            logger.info("Building new knowledge base...")
+            success = _rag_pipeline_instance.build_knowledge_base(force_rebuild=force_rebuild)
             
             if success:
                 logger.info("✅ RAGPipeline initialized successfully with OCR support")
@@ -91,6 +107,7 @@ def get_rag_pipeline():
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
             _rag_pipeline_instance = None
+            _initialization_attempted = True
     
     return _rag_pipeline_instance
 

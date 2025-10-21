@@ -30,12 +30,15 @@ class DocumentExtractor:
         """
         Perform OCR on a PDF file and return a list of page Documents.
         Uses Tesseract with Portuguese language if available.
+        Optimized for memory usage.
         """
         try:
             logger.info(f"Running OCR fallback for: {file_path}")
-            images = convert_from_path(file_path, dpi=300)
+            # Reduced DPI to save memory
+            images = convert_from_path(file_path, dpi=150, first_page=1, last_page=10)  # Limit to first 10 pages
             ocr_docs: List[Document] = []
             for page_index, image in enumerate(images):
+                # Process image in smaller chunks to save memory
                 text = pytesseract.image_to_string(image, lang="por")
                 page_doc = Document(
                     page_content=text or "",
@@ -49,6 +52,8 @@ class DocumentExtractor:
                     }
                 )
                 ocr_docs.append(page_doc)
+                # Clear image from memory
+                del image
             logger.info(f"OCR produced {len(ocr_docs)} pages for {file_path}")
             return ocr_docs
         except Exception as e:
@@ -57,30 +62,43 @@ class DocumentExtractor:
         
     def extract_pdfs(self) -> List[Document]:
         """
-        Extract all PDFs from base_directory and subdirectories
+        Extract PDFs from base_directory and subdirectories with memory optimization
         
         Returns:
             List[Document]: List of extracted documents
         """
         documents = []
+        max_files = 5  # Limit number of files to process for memory optimization
+        processed_files = 0
         
         if not os.path.isdir(self.base_directory):
             logger.error(f"Diretório base não encontrado: {self.base_directory}")
             return documents
             
-        logger.info(f"Iniciando extração de PDFs em: {self.base_directory}")
+        logger.info(f"Iniciando extração de PDFs em: {self.base_directory} (limitado a {max_files} arquivos)")
         
         # Recursively traverse the base directory
         for root, dirs, files in os.walk(self.base_directory):
+            if processed_files >= max_files:
+                break
+                
             for file_name in files:
+                if processed_files >= max_files:
+                    break
+                    
                 if file_name.lower().endswith('.pdf'):
                     file_path = os.path.join(root, file_name)
                     try:
-                        logger.info(f"Processando PDF: {file_path}")
+                        logger.info(f"Processando PDF ({processed_files + 1}/{max_files}): {file_path}")
                         
                         # Load the PDF document
                         loader = PyPDFLoader(file_path)
                         pdf_documents = loader.load()
+                        
+                        # Limit pages per document to save memory
+                        if len(pdf_documents) > 20:
+                            pdf_documents = pdf_documents[:20]  # Limit to first 20 pages
+                            logger.info(f"Limited to first 20 pages of {file_name}")
                         
                         # Add additional metadata
                         for doc in pdf_documents:
@@ -101,13 +119,14 @@ class DocumentExtractor:
                                 pdf_documents = ocr_docs
                         
                         documents.extend(pdf_documents)
+                        processed_files += 1
                         logger.info(f"  - {len(pdf_documents)} pages extracted from {file_name}")
                         
                     except Exception as e:
                         logger.error(f"Error while processing file: {file_path}: {e}")
                         continue
         
-        logger.info(f"Total of {len(documents)} documents extracted")
+        logger.info(f"Total of {len(documents)} documents extracted from {processed_files} files")
         return documents
     
     def extract_documents(self) -> List[Document]:

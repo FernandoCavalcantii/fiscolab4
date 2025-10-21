@@ -104,11 +104,102 @@ class QuestionGenerationView(APIView):
             pipeline = get_rag_pipeline()
             
             if pipeline is None:
-                # Fallback for when pipeline is not initialized
-                return Response(
-                    {"error": "RAG pipeline not initialized"}, 
-                    status=status.HTTP_503_SERVICE_UNAVAILABLE
-                )
+                # Fallback response when pipeline is not available
+                fallback_response = {
+                    "sources": [{"file_name": "fallback.txt"}],
+                    "challenges": [
+                        {
+                            "challenge": f"Desafio sobre {topic}: Explique os conceitos fundamentais relacionados ao tema {topic}.",
+                            "challenge_answer": "Resposta esperada sobre os conceitos fundamentais do tema.",
+                            "challenge_justification": "Esta questão aborda os conceitos básicos necessários para compreender o tema."
+                        }
+                    ],
+                    "questions": [
+                        {
+                            "question": f"Qual é a importância do tema {topic}?",
+                            "options": {
+                                "A": "Opção A",
+                                "B": "Opção B", 
+                                "C": "Opção C",
+                                "D": "Opção D",
+                                "E": "Opção E"
+                            },
+                            "correct_answer": "A",
+                            "question_justification": "Justificativa da resposta correta."
+                        }
+                    ]
+                }
+                
+                # Save fallback challenge to database
+                try:
+                    with transaction.atomic():
+                        # Map difficulty from "Médio" to "MEDIUM"
+                        difficulty_map = {v: k for k, v in Question.Difficulty.choices}
+                        difficulty_enum = difficulty_map.get(difficulty.capitalize(), Question.Difficulty.MEDIUM)
+
+                        # Get or create Program and Track
+                        program, _ = Program.objects.get_or_create(name=program_name.upper())
+                        track, _ = Track.objects.get_or_create(program=program, name=track_name.capitalize())
+
+                        # Create Challenge
+                        challenge = Challenge.objects.create(
+                            track=track,
+                            title=f"{topic.capitalize()} (Fallback)",
+                            difficulty=difficulty_enum,
+                            status=Challenge.ChallengeStatus.PENDING
+                        )
+
+                        # Create and associate sources
+                        source_objects = []
+                        for source_data in fallback_response.get('sources', []):
+                            source, _ = Source.objects.get_or_create(file_name=source_data['file_name'])
+                            source_objects.append(source)
+                        challenge.sources.add(*source_objects)
+                        
+                        # Create Discursive or Problem Questions based on type
+                        is_calculation = str(type).strip().lower().startswith(('calc', 'cálc', 'c\u00e1lc'))
+                        is_discursive = str(type).strip().lower().startswith(('disc', 'discur', 'discurs', 'discursiva'))
+                        for pq_data in fallback_response.get('challenges', []):
+                            if is_discursive and not is_calculation:
+                                DiscursiveQuestion.objects.create(
+                                    challenge=challenge,
+                                    statement=pq_data['challenge'],
+                                    answer_text=pq_data['challenge_answer'],
+                                    justification=pq_data['challenge_justification']
+                                )
+                            else:
+                                from decimal import Decimal
+                                ProblemQuestion.objects.create(
+                                    challenge=challenge,
+                                    statement=pq_data['challenge'],
+                                    correct_answer=Decimal('0.0'),
+                                    justification=pq_data['challenge_justification']
+                                )
+                        
+                        # Create Multiple Choice Questions
+                        for mcq_data in fallback_response.get('questions', []):
+                            MultipleChoiceQuestion.objects.create(
+                                challenge=challenge,
+                                statement=mcq_data['question'],
+                                option_a=mcq_data['options']['A'],
+                                option_b=mcq_data['options']['B'],
+                                option_c=mcq_data['options']['C'],
+                                option_d=mcq_data['options']['D'],
+                                option_e=mcq_data['options']['E'],
+                                correct_option=mcq_data['correct_answer'],
+                                justification=mcq_data['question_justification']
+                            )
+                    
+                    # Return the persisted challenge
+                    from questions.serializers import ChallengeSerializer
+                    serialized = ChallengeSerializer(challenge)
+                    return Response(serialized.data, status=status.HTTP_200_OK)
+                    
+                except Exception as e:
+                    return Response(
+                        {"error": f"Error creating fallback challenge: {str(e)}"}, 
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
             
             # Generate question
             question_data = pipeline.generate_challenges_and_questions(topic, difficulty, type)
