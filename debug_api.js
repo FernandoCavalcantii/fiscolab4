@@ -1,5 +1,5 @@
 // Teste de debug da API
-const API_URL = 'https://fiscolab-backend.onrender.com';
+const API_URL = 'https://fiscolab-backend-2.onrender.com';
 
 console.log('🔍 Testando conexão com a API...');
 
