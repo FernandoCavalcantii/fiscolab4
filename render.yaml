@@ -1,7 +1,7 @@
 services:
   # Backend Django API
   - type: web
-    name: fiscolab-backend
+    name: fiscolab-backend-2
     env: python
     plan: free
     buildCommand: |
@@ -11,7 +11,7 @@ services:
       python manage.py collectstatic --noinput
     startCommand: |
       cd back
-      python manage.py runserver 0.0.0.0:$PORT
+      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 900
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings_production
@@ -34,7 +34,7 @@ services:
 
   # Frontend React
   - type: web
-    name: fiscolab-frontend
+    name: fiscolab-frontend-2
     env: static
     plan: free
     buildCommand: |
