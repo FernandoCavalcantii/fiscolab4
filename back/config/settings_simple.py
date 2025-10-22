@@ -15,7 +15,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'fiscolab-backend.onrender.com',
+    'fiscolab-backend-2.onrender.com',
     '.onrender.com'
 ]
 
@@ -46,8 +46,8 @@ X_FRAME_OPTIONS = 'DENY'
 
 # CORS settings for production
 CORS_ALLOWED_ORIGINS = [
-    "https://fiscolab-frontend.onrender.com",
-    "https://fiscolab-backend.onrender.com",
+    "https://fiscolab-frontend-2.onrender.com",
+    "https://fiscolab-backend-2.onrender.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

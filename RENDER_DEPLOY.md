@@ -30,7 +30,7 @@ git push origin main
 1. **New → Web Service**
 2. **Conectar repositório**: Selecione seu repositório
 3. **Configurações**:
-   - **Name**: `fiscolab-backend`
+   - **Name**: `fiscolab-backend-2`
    - **Environment**: `Python 3`
    - **Build Command**: `cd back && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput`
    - **Start Command**: `cd back && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
@@ -41,7 +41,7 @@ git push origin main
    DJANGO_SETTINGS_MODULE=config.settings_simple
    DJANGO_SECRET_KEY=vxYx1JpDvU2vhwhaen6Bf-b2I1aIDBYpL8sOpVLO46yewzsrbkVgTjlyma03v7xrO2U
    DJANGO_DEBUG=False
-   ALLOWED_HOSTS=fiscolab-backend.onrender.com
+   ALLOWED_HOSTS=fiscolab-backend-2.onrender.com
    OPENAI_API_KEY=<sua-chave-openai>
    ```
 
@@ -50,14 +50,14 @@ git push origin main
 1. **New → Static Site**
 2. **Conectar repositório**: Mesmo repositório
 3. **Configurações**:
-   - **Name**: `fiscolab-frontend`
+   - **Name**: `fiscolab-frontend-2`
    - **Build Command**: `cd front && npm install && npm run build`
    - **Publish Directory**: `front/build`
    - **Plan**: `Free`
 
 4. **Variáveis de Ambiente**:
    ```
-   REACT_APP_API_URL=https://fiscolab-backend.onrender.com
+   REACT_APP_API_URL=https://fiscolab-backend-2.onrender.com
    ```
 
 ### 5. Banco de Dados PostgreSQL
@@ -120,9 +120,9 @@ git push origin main
 ## 🌐 URLs Finais
 
 Após o deploy, você terá:
-- **Backend**: `https://fiscolab-backend.onrender.com`
-- **Frontend**: `https://fiscolab-frontend.onrender.com`
-- **Admin Django**: `https://fiscolab-backend.onrender.com/admin/`
+- **Backend**: `https://fiscolab-backend-2.onrender.com`
+- **Frontend**: `https://fiscolab-frontend-2.onrender.com`
+- **Admin Django**: `https://fiscolab-backend-2.onrender.com/admin/`
 
 ## 💡 Dicas Importantes
 

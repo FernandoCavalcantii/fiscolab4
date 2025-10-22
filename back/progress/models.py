@@ -187,7 +187,7 @@ class BadgeDefinition(models.Model):
     @property
     def badge_image_url(self):
         """Retorna URL completa da imagem do badge"""
-        base_url = "http://localhost:8000" if settings.DEBUG else "https://fiscolab-backend.onrender.com/"
+        base_url = "http://localhost:8000" if settings.DEBUG else "https://fiscolab-backend-2.onrender.com/"
         
         full_path = os.path.join(settings.MEDIA_ROOT, self.badge_image)
         if os.path.exists(full_path):
