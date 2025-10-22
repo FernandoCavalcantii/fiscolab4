@@ -91,9 +91,9 @@ git push origin main
 3. Siga o guia em [RENDER_DEPLOY.md](./RENDER_DEPLOY.md)
 
 ### 3. URLs Finais
-- **Frontend**: `https://fiscolab-frontend.onrender.com`
-- **Backend**: `https://fiscolab-backend.onrender.com`
-- **Admin**: `https://fiscolab-backend.onrender.com/admin/`
+- **Frontend**: `https://fiscolab-frontend-2.onrender.com`
+- **Backend**: `https://fiscolab-backend-2.onrender.com`
+- **Admin**: `https://fiscolab-backend-2.onrender.com/admin/`
 
 ## 🔧 Desenvolvimento Local
 
