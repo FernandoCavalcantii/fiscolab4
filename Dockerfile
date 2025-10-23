@@ -91,6 +91,7 @@ set -e\n\
 \n\
 # Run migrations with error handling\n\
 echo "Running migrations..."\n\
+python manage.py makemigrations || echo "MakeMigrations failed, continuing..."\n\
 python manage.py migrate || echo "Migration failed, continuing..."\n\
 \n\
 # Collect static files\n\

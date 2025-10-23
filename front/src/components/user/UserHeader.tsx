@@ -83,7 +83,9 @@ const UserHeader: React.FC = () => {
         <Link to="/perfil">
             <ProfileButton>Acessar perfil</ProfileButton>
         </Link>
-        <LogoutButton onClick={handleLogout}>Sair</LogoutButton>
+        <LogoutButton onClick={handleLogout}>
+          <ProfileButton>Sair</ProfileButton>
+        </LogoutButton>
       </Nav>
     </HeaderContainer>
   );
