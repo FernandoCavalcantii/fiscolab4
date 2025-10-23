@@ -4,7 +4,9 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import AdminHeader from '../components/admin/AdminHeader';
-import { IoIosArrowBack } from 'react-icons/io';
+import BackButton from '../components/common/BackButton';
+import ToastManager from '../components/common/ToastManager';
+import { useToast } from '../hooks/useToast';
 // Ícone de exemplo
 import { FaDatabase } from 'react-icons/fa';
 import { generateQuestions } from '../api';
@@ -16,8 +18,11 @@ const PageWrapper = styled.div`
 const MainContent = styled.main`
   padding: 2rem 3rem;
 `;
-const BackLink = styled(Link)`...`; // Reutilize o estilo
-const PageTitle = styled.h1`...`; // Reutilize o estilo
+const PageTitle = styled.h1`
+  margin: 0;
+  font-size: 2rem;
+  color: #333;
+`;
 
 const GeneratorContainer = styled.div`
   background-color: #a398d5;
@@ -62,6 +67,7 @@ const SubmitButton = styled.button`
 
 const ChallengeGeneratorPage: React.FC = () => {
   const navigate = useNavigate();
+  const { toasts, showSuccess, showError, removeToast } = useToast();
   const [formData, setFormData] = useState({
     difficulty: 'Fácil',
     program: 'PROIND',
@@ -82,7 +88,7 @@ const ChallengeGeneratorPage: React.FC = () => {
     e.preventDefault();
     
     if (!formData.topic.trim()) {
-      alert('Por favor, preencha o assunto do desafio');
+      showError('Campo obrigatório', 'Por favor, preencha o assunto do desafio');
       return;
     }
 
@@ -103,7 +109,7 @@ const ChallengeGeneratorPage: React.FC = () => {
       });
     } catch (error) {
       console.error('Erro ao gerar questões:', error);
-      alert('Erro ao gerar questões. Tente novamente.');
+      showError('Erro', 'Erro ao gerar questões. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +118,7 @@ const ChallengeGeneratorPage: React.FC = () => {
   return (
     <PageWrapper>
       <MainContent>
-        <BackLink to="/admin"><IoIosArrowBack /> Voltar</BackLink>
+        <BackButton to="/admin" />
         <PageTitle>Gerador de desafios</PageTitle>
         <GeneratorContainer>
           <IconWrapper><FaDatabase /></IconWrapper>
@@ -185,6 +191,7 @@ const ChallengeGeneratorPage: React.FC = () => {
           </form>
         </GeneratorContainer>
       </MainContent>
+      <ToastManager toasts={toasts} onRemoveToast={removeToast} />
     </PageWrapper>
   );
 };

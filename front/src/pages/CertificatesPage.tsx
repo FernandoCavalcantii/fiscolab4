@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import CertificateCard from '../components/certificates/CertificateCard';
+import BackButton from '../components/common/BackButton';
 import { useCertificates, Certificate } from '../hooks/useCertificates';
 import styles from './CertificatesPage.module.css';
 
 const CertificatesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   
   const {
@@ -54,10 +57,10 @@ const CertificatesPage: React.FC = () => {
   };
 
   const handleTakeTest = (certificateId: string) => {
-    // Navegar para o quiz de certificado
+    // Navegar para o quiz de certificado usando React Router
     const certificate = certificates.find(cert => cert.id === certificateId);
     if (certificate) {
-      window.location.href = `/certificados/quiz/${certificate.program}/${certificate.level}`;
+      navigate(`/certificados/quiz/${certificate.program}/${certificate.level}`);
     }
   };
 
@@ -85,6 +88,8 @@ const CertificatesPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <BackButton to="/" />
+      
       <div className={styles.header}>
         <h1 className={styles.title}>Certificações</h1>
         <div className={styles.searchContainer}>

@@ -4,6 +4,7 @@ import { trilhas, type Trilha, type ItemDaListaAninhada } from '../data/trilhasD
 import { useProgress } from '../hooks/useProgress';
 import TrackDetailHeader from '../components/common/TrackDetailHeader';
 import VideoSection from '../components/common/VideoSection';
+import BackButton from '../components/common/BackButton';
 import videoDaTrilha from '../assets/images/PROIND/Video_Compet_Superior.mp4';
 import DesafiosCard from '../components/common/DesafiosCard';
 import TesteCertificacaoCard from '../components/common/TesteCertificacaoCard';
@@ -98,7 +99,7 @@ const TrailsPanel = () => {
 
   return (
     <div className={styles.container}>
-      <button className={styles.backButton} onClick={() => navigate(-1)}>&larr;</button>
+      <BackButton onClick={() => navigate(-1)} />
 
       <TrackDetailHeader
       trilhaId={trilhaAtual.id} 
