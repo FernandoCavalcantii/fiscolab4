@@ -159,6 +159,11 @@ export const useCertificates = () => {
     return certificates.filter(cert => cert.isCompleted);
   };
 
+  const getCompletedCertificatesCount = () => {
+    return certificates.filter(cert => cert.isCompleted).length;
+  };
+
+
   const filterAvailableCertificates = () => {
     const available = certificates.filter(cert => !cert.isCompleted && cert.status === 'available');
     console.log('🔍 filterAvailableCertificates - Total:', certificates.length, 'Disponíveis:', available.length);
@@ -183,6 +188,7 @@ export const useCertificates = () => {
     error,
     searchCertificates,
     getCompletedCertificates: filterCompletedCertificates,
+    getCompletedCertificatesCount, 
     getAvailableCertificates: filterAvailableCertificates,
     groupCertificatesByProgram,
     refreshCertificates: fetchCertificates

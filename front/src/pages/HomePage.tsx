@@ -39,7 +39,6 @@ function HomePage() {
   async function fetchUser() {
     try {
       const user = await getCurrentUser();
-      console.log('Dados do usuário:', user);
 
       if (user && user.full_name) {
         const firstName = user.full_name.split(' ')[0];
@@ -48,12 +47,10 @@ function HomePage() {
         setUserName('Usuário');
       }
 
-      // Verificar se o usuário é administrador
       if (user && (user.is_staff || user.is_superuser)) {
         setIsAdmin(true);
       }
     } catch (error) {
-      console.error('Erro ao buscar usuário:', error);
       setUserName('Usuário');
     }
   }

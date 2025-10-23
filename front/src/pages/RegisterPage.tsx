@@ -88,21 +88,20 @@ const RegisterPage = () => {
       navigate("/setup");
 
     } catch (err: any) {
+      console.error('Erro no registro:', err);
       if (err.response?.data) {
         const backendErrors = err.response.data;
-        let errorMessage = "Erro ao cadastrar usuário:\n";
-        
+        let errorMessage = "";
         Object.entries(backendErrors).forEach(([field, messages]: [string, any]) => {
           if (Array.isArray(messages)) {
-            errorMessage += `${field}: ${messages.join(', ')}\n`;
+            const fieldLabel = field === "password" ? "Senha" : field === "email" ? "Email" : field === "cpf" ? "CPF" : field;
+            errorMessage += `${fieldLabel}: ${messages.join("\n")}` + "\n";
           }
         });
-        
-        setError(errorMessage);
+        setError(errorMessage.trim());
       } else {
-        setError("Erro ao cadastrar usuário");
+        setError("Erro ao cadastrar usuário. Tente novamente.");
       }
-      console.error('Erro no registro:', err);
     } finally {
       setLoading(false);
     }
@@ -115,7 +114,22 @@ const RegisterPage = () => {
         <h2>Cadastro</h2>
         <p>Dados pessoais</p>
 
-        {error && <pre style={{ color: "red", whiteSpace: "pre-wrap" }}>{error}</pre>}
+        {error && (
+          <div style={{
+            backgroundColor: '#ffeaea',
+            color: '#a10000',
+            padding: '1rem',
+            borderRadius: '8px',
+            border: '1px solid #ffb3b3',
+            marginBottom: '1rem',
+            whiteSpace: 'pre-line'
+          }}>
+            <strong>⚠️ Corrija os seguintes erros:</strong>
+            <br />
+            {error}
+          </div>
+        )}
+
 
         <input 
           type="text" 
@@ -171,6 +185,10 @@ const RegisterPage = () => {
           disabled={loading}
           required 
         />
+
+        <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px'}}>
+          A senha deve ter pelo menos 8 caracteres e conter ao menos um número.
+        </p>
         
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
           <input 

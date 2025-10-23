@@ -37,11 +37,9 @@ function UserSetup() {
 
     try {
       const response = await updateUser(updateData);
-      console.log('Usuário atualizado com sucesso:', response);
       navigate('/'); 
     } catch (e: any) {
       setError('Erro ao atualizar informações. Por favor, tente novamente.');
-      console.error(e);
     } finally {
       setLoading(false);
     }

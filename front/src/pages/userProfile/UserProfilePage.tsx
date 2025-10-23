@@ -4,9 +4,11 @@ import {
   getCurrentUser, 
   patchCurrentUser, 
   getUserProgress,
-  changePassword 
+  changePassword, 
+  getCompletedCertificates
 } from '../../api';
 import type { UserProgressResponse } from '../../api';
+import { useCertificates } from '../../hooks/useCertificates';
 import { useBadges } from '../../hooks/useBadges';
 
 interface User {
@@ -69,6 +71,9 @@ function ProfilePage() {
   });
   const [businessField, setBusinessField] = useState('');
   const [interestAreas, setInterestAreas] = useState<string[]>([]);
+
+  const { getCompletedCertificatesCount } = useCertificates();
+  const completedCertificatesCount  = getCompletedCertificatesCount();
 
   useEffect(() => {
     loadAllData();
@@ -191,7 +196,7 @@ function ProfilePage() {
                 <div className={styles.progressGrid}>
                   <ProgressCard title="Trilhas concluídas" count={stats?.trilhas_concluidas || 0} />
                   <ProgressCard title="Desafios feitos" count={stats?.desafios_feitos || 0} />
-                  <ProgressCard title="Certificados obtidos" count={stats?.certificados_obtidos || 0} />
+                  <ProgressCard title="Certificados obtidos" count={completedCertificatesCount || 0} />
                 </div>
               </div>
             )}
