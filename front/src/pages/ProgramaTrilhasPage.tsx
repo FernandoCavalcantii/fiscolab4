@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { trilhas } from '../data/trilhasData';
 import TrailCard from '../components/cards/TrailCard';
+import BackButton from '../components/common/BackButton';
 import styles from './ProgramaTrilhasPage.module.css';
 // import { IoSearch } from 'react-icons/io5';
 
@@ -133,9 +134,7 @@ const ProgramaTrilhasPage = () => {
   return (
     <div className={styles.pageContainer}>
        <div className={styles.contentWrapper}>
-          <button className={styles.backButton} onClick={() => navigate(-1)}>
-          &larr;
-        </button>
+          <BackButton onClick={() => navigate(-1)} />
 
       <h1 className={styles.title}>Explore nossas Trilhas</h1>
 

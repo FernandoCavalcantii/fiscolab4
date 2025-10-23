@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import AdminHeader from '../components/admin/AdminHeader';
 import StatsCards from '../components/admin/StatsCards';
 import ChallengesGrid from '../components/admin/ChallengesGrid';
-import { IoIosArrowBack } from 'react-icons/io';
+import BackButton from '../components/common/BackButton';
+import ToastManager from '../components/common/ToastManager';
+import { useToast } from '../hooks/useToast';
 import { FiPlus } from 'react-icons/fi';
 import { fetchPendingChallenges, fetchApprovedChallenges, updateChallengeStatus, deleteChallenge } from '../api'; 
 
@@ -27,20 +29,7 @@ const PageHeader = styled.div`
   gap: 1rem;
 `;
 
-const BackLink = styled(Link)`
-  color: #555;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  width: fit-content;
-
-  &:hover {
-    color: #000;
-  }
-`;
+// Removed BackLink styled component - using BackButton component instead
 
 const PageTitle = styled.h1`
   margin: 0;
@@ -75,6 +64,7 @@ const AdminSefaz: React.FC = () => {
     const [challenges, setChallenges] = useState<any[]>([]);
     const [approvedCount, setApprovedCount] = useState(0);
     const [loading, setLoading] = useState(true);
+    const { toasts, showSuccess, showError, removeToast } = useToast();
 
     useEffect(() => {
         const loadChallenges = async () => {
@@ -123,10 +113,10 @@ const AdminSefaz: React.FC = () => {
             }));
             setChallenges(formattedChallenges);
             setApprovedCount(approvedData.length);
-            alert('Desafio aprovado com sucesso!');
+            showSuccess('Sucesso!', 'Desafio aprovado com sucesso!');
         } catch (error) {
             console.error('Erro ao aprovar desafio:', error);
-            alert('Erro ao aprovar desafio. Tente novamente.');
+            showError('Erro', 'Erro ao aprovar desafio. Tente novamente.');
         }
     };
 
@@ -147,13 +137,13 @@ const AdminSefaz: React.FC = () => {
                         `Nível: ${challenge.difficulty === 'EASY' ? 'Fácil' : challenge.difficulty === 'MEDIUM' ? 'Médio' : 'Difícil'}`
                     ]
                 }));
-                setChallenges(formattedChallenges);
-                setApprovedCount(approvedData.length);
-                alert('Desafio excluído com sucesso!');
-            } catch (error) {
-                console.error('Erro ao excluir desafio:', error);
-                alert('Erro ao excluir desafio. Tente novamente.');
-            }
+            setChallenges(formattedChallenges);
+            setApprovedCount(approvedData.length);
+            showSuccess('Sucesso!', 'Desafio excluído com sucesso!');
+        } catch (error) {
+            console.error('Erro ao excluir desafio:', error);
+            showError('Erro', 'Erro ao excluir desafio. Tente novamente.');
+        }
         }
     };
 
@@ -162,7 +152,7 @@ const AdminSefaz: React.FC = () => {
       <MainContent>
         <div>
           <PageHeader>
-            <BackLink to="/"><IoIosArrowBack /> Voltar</BackLink>
+            <BackButton to="/" />
             <PageTitle>Administrador Sefaz</PageTitle>
           </PageHeader>
         </div>
@@ -190,6 +180,7 @@ const AdminSefaz: React.FC = () => {
             />
         )}
       </MainContent>
+      <ToastManager toasts={toasts} onRemoveToast={removeToast} />
     </AdminWrapper>
   );
 };

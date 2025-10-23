@@ -2,7 +2,9 @@ import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AdminHeader from '../components/admin/AdminHeader';
-import { IoIosArrowBack } from 'react-icons/io';
+import BackButton from '../components/common/BackButton';
+import ToastManager from '../components/common/ToastManager';
+import { useToast } from '../hooks/useToast';
 import { updateDiscursiveQuestion, updateMultipleChoiceQuestion, updateProblemQuestion } from '../api';
 
 const PageWrapper = styled.div`
@@ -12,8 +14,11 @@ const PageWrapper = styled.div`
 const MainContent = styled.main`
   padding: 2rem 3rem;
 `;
-const BackLink = styled(Link)`...`; // Reutilize o estilo
-const PageTitle = styled.h1`...`; // Reutilize o estilo
+const PageTitle = styled.h1`
+  margin: 0;
+  font-size: 2rem;
+  color: #333;
+`;
 
 const HeaderActions = styled.div`
   display: flex;
@@ -73,6 +78,7 @@ const ChallengeGeneratedPage: React.FC = () => {
     const location = useLocation() as any;
     const navigate = useNavigate();
     const challenge = location?.state?.challenge;
+    const { toasts, showSuccess, showError, removeToast } = useToast();
 
     const [editing, setEditing] = useState<any>({});
 
@@ -148,14 +154,14 @@ const ChallengeGeneratedPage: React.FC = () => {
       });
 
       await Promise.all(updates);
-      alert('Alterações salvas com sucesso.');
-      navigate('/admin');
+      showSuccess('Sucesso!', 'Alterações salvas com sucesso.');
+      setTimeout(() => navigate('/admin'), 1500);
     };
 
     return (
         <PageWrapper>
             <MainContent>
-                <BackLink to="/admin"><IoIosArrowBack /> Voltar</BackLink>
+                <BackButton to="/admin" />
                 <HeaderActions>
                     <div>
                         <PageTitle>Desafio {challenge?.id || 'N/A'}</PageTitle>
@@ -228,6 +234,7 @@ const ChallengeGeneratedPage: React.FC = () => {
                   </>
                 )}
             </MainContent>
+            <ToastManager toasts={toasts} onRemoveToast={removeToast} />
         </PageWrapper>
     );
 }

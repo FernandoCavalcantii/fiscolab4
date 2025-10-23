@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import DifficultySelector from '../components/user/DifficultySelector';
 import ChallengeList from '../components/user/ChallengeList';
-import { IoArrowBack } from 'react-icons/io5';
+import BackButton from '../components/common/BackButton';
 
 import { type Challenge } from '../types';
 import { getChallengesByTrailAndDifficulty, parseTrailId } from '../api';
@@ -19,23 +19,7 @@ const MainContainer = styled.main`
   padding: 0 1rem;
 `;
 
-const BackButton = styled.button`
-  background: #fff;
-  border: 1px solid #e0e2e8;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-bottom: 2rem;
-  color: #333;
-
-  &:hover {
-    background: #f1f3f5;
-  }
-`;
+// Removed BackButton styled component - using common BackButton component
 
 const ContentBox = styled.div`
   background: linear-gradient(180deg, #eaf0ff 0%, #f8f9fa 100%);
@@ -226,9 +210,7 @@ const TrailChallengesPage: React.FC = () => {
   return (
     <PageWrapper>
       <MainContainer>
-        <BackButton onClick={() => navigate(`/trilhas/${trailInfo?.program.toLowerCase()}`)}>
-          {IoArrowBack({ size: 20 }) as React.ReactElement}
-        </BackButton>
+        <BackButton onClick={() => navigate(`/trilhas/${trailInfo?.program.toLowerCase()}`)} />
 
         <ContentBox>
           {trailInfo && (
