@@ -9,16 +9,20 @@
 }
 
 .formContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1rem; 
+  gap: 1rem;
   padding: 2.5rem;
-  border-radius: 12px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  background: #FFF;
+  box-shadow: 0 4px 20px 0 rgba(93, 94, 97, 0.25);
+  width: 90%;
+  max-width: 500px; 
+  height: auto; 
+  flex-shrink: 0;
+  border: none;
+  z-index: 2;
 }
 
 
@@ -133,15 +137,51 @@
   border-color: #61758A;
 }
 
+.sideImageLeft,
+.sideImageRight {
+  max-height: 600px;
+  object-fit: contain;
+}
+
+.sideImageLeft {
+  position: absolute;
+  bottom: -80px;      /* desce mais um pouco */
+  left: 150px;         /* dá um pequeno afastamento da borda */
+  width: 100px;       /* deixa menor */
+  height: auto;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
+.sideImageRight {
+  position: absolute;
+  bottom: -80px;      /* ajusta pra alinhar */
+  right: 60px;        /* afastamento da borda */
+  width: 600px;       /* menor também */
+  height: auto;
+  object-fit: contain;
+  opacity: 0.9;
+  z-index: 1;
+}
+
 /* Estilos responsivos */
-@media (max-width: 480px) {
+@media (max-width: 900px) {
   .formContainer {
     padding: 1.5rem;
+    width: 95%;
+    box-shadow: 0 2px 10px rgba(93, 94, 97, 0.15);
   }
+
+  .sideImageLeft,
+  .sideImageRight {
+    display: none; 
+  }
+
 
   .submitButton, .registerButton {
     font-size: 0.9rem;
     padding: 12px;
   }
 }
+
 

@@ -108,11 +108,39 @@ const RegisterPage = () => {
     }
   };
 
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const [step, setStep] = useState(1);
+
+  const handleBack = () => {
+  if (step > 1) {
+    setStep(step - 1);
+  } else {
+    navigate(-1);
+  }
+};
+
   return (
+
     <div className={styles.pageContainer}>
+    
+    <div className={styles.backButtonContainer}>
+      <button type="button" onClick={handleBack} className={styles.backButton}>
+        <span className={styles.arrow}>&lt;</span>
+        <span>Voltar</span>
+      </button>
+    </div>
+
       <form className={styles.formContainer} onSubmit={handleRegisterSubmit}>
-        <img src="" alt="Ícone de Cadeado" className={styles.formIcon}/>
+
         <h2>Cadastro</h2>
+
+      <div className={styles.stepIndicator}>
+        <div className={`${styles.step} ${currentStep === 1 ? styles.active : ""}`}>1</div>
+        <div className={`${styles.line} ${currentStep > 1 ? styles.activeLine : ""}`}></div>
+        <div className={`${styles.step} ${currentStep === 2 ? styles.active : ""}`}>2</div>
+      </div>
+
         <p>Dados pessoais</p>
 
         {error && <pre style={{ color: "red", whiteSpace: "pre-wrap" }}>{error}</pre>}
@@ -172,17 +200,17 @@ const RegisterPage = () => {
           required 
         />
         
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+        <div className={styles.termsContainer}>
           <input 
             type="checkbox" 
-            id="isAdmin"
+            id="isAdmin" className={styles.checkbox}
             checked={isAdmin}
             onChange={e => setIsAdmin(e.target.checked)}
             disabled={loading}
             style={{ marginRight: '10px' }}
           />
-          <label htmlFor="isAdmin" style={{ color: '#333', fontSize: '14px' }}>
-            Cadastrar como administrador do sistema
+          <label htmlFor="isAdmin" className={styles.termsLabel}>
+            Cadastrar como administrador do sistema.
           </label>
         </div>
         
@@ -190,13 +218,18 @@ const RegisterPage = () => {
           type="submit" 
           className={styles.submitButton}
           disabled={loading}
+          onClick={() => setCurrentStep(2)}
         >
           {loading ? "Cadastrando..." : "Continuar..."} {/* ✅ Feedback visual */}
         </button>
         
-        <p className={styles.termsText}>
-          Li e concordo com os <a href="/terms">Termos de Serviço</a> e <a href="/privacy">Política de Privacidade</a>.
-        </p>
+        <div className={styles.termsContainer}>
+          <input type="checkbox" id="terms" className={styles.checkbox} />
+          <label htmlFor="terms" className={styles.termsLabel}>
+            Li e concordo com os{' '}
+            <a href="#" className={styles.link}>Termos de Uso</a> da plataforma.
+          </label>
+        </div>
       </form>
     </div>
   );
