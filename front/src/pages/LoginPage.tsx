@@ -4,6 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginUser, logoutUser, verifyToken } from "../api";
 import { useAuth } from '../contexts/AuthContext';
 
+import leftImage from '../assets/images/ilustracao-login2.png';
+import rightImage from '../assets/images/ilustracao-login.png';
+
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -83,6 +87,8 @@ const LoginPage = () => {
     };
 
   return (
+  <div className={styles.loginPage}>
+  <img src={leftImage} alt="Decoração esquerda" className={styles.sideImageLeft} />
     <div className={styles.pageContainer}>
       <form className={styles.formContainer} onSubmit={handleSubmit}>
         <h1>Seu caminho começa agora.</h1>
@@ -139,6 +145,8 @@ const LoginPage = () => {
         </div>
       </form>
     </div>
+     <img src={rightImage} alt="Decoração direita" className={styles.sideImageRight} />
+</div>
   );
 };
 

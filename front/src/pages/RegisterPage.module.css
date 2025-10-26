@@ -5,6 +5,7 @@
   display: flex;
   justify-content: center;
   padding: 3rem 1rem; 
+  position: relative;
 }
 
 .formContainer {
@@ -13,13 +14,13 @@
   align-items: center;
   gap: 1rem;
   padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: none;
+  box-shadow: none;
   background-color: #ffffff;
-  box-shadow: 0 4px B2px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   width: 100%;
   max-width: 450px;
-  border: 1px solid #e9e9e9;
+  border:none;
 }
 
 .formIcon {
@@ -29,9 +30,12 @@
 }
 
 .formContainer h2 {
-  margin: 0;
-  font-size: 24px; 
-  font-weight: 700; 
+  color: #020F59;
+  text-align: center;
+  font-family: Inter, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 35px;
 }
 
 .formContainer p {
@@ -57,7 +61,7 @@
 .submitButton {
   width: 100%;
   padding: 14px;
-  background-color: #36366B;
+  background-color: #333366;
   color: white;
   border: none;
   border-radius: 8px;
@@ -85,18 +89,35 @@
   text-decoration: none;
 }
 
-.termsText {
-  font-size: 0.875rem;
+.termsContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
   color: #6c757d;
-  text-align: center;
-  margin-top: 1rem;
-  max-width: 300px;
-  line-height: 1.5;
 }
 
-.termsText a {
-  color: #007bff;
-  text-decoration: none;
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #333366;
+  border-radius: 4px;
+  accent-color: #333366; 
+  cursor: pointer;
+}
+
+.termsLabel {
+  line-height: 1.4;
+}
+
+.link {
+  color: #333366;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.link:hover {
+  color: #1a1a40;
 }
 
 .usersListLink {
@@ -104,4 +125,83 @@
   text-decoration: none;
   color: #007bff;
   font-size: 16px;
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+
+.step {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #d9d9d9; 
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.active {
+  background-color: #333366; 
+}
+
+.line {
+  width: 40px;
+  height: 4px;
+  background-color: #d9d9d9;
+  border-radius: 2px;
+  margin: 0 4px;
+  transition: background-color 0.3s ease;
+}
+
+.activeLine {
+  background-color: #333366;
+}
+
+.stepIndicator .activeLine + .line {
+  background-color: #333366;
+}
+
+.backButtonContainer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 3rem; 
+  margin-top: 2rem; 
+  position: absolute; 
+  top: 2rem;
+  left: 2rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  font-size: 16px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color 0.2s ease;
+}
+
+.backButton:hover {
+  color: #020F59;
+}
+
+.arrow {
+  color: #020F59; /* azul escuro igual do Figma */
+  font-size: 18px;
+  line-height: 1;
+  margin-top: 1px;
 }
