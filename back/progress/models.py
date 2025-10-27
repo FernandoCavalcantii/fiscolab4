@@ -7,30 +7,36 @@ import os
 
 User = get_user_model()
 
+
 class DifficultyLevel(models.TextChoices):
     EASY = 'EASY', 'Fácil'
     MEDIUM = 'MEDIUM', 'Médio'
     HARD = 'HARD', 'Difícil'
+    CERTIFICATE = 'CERTIFICATE', 'Certificado'
+
 
 class BadgeType(models.TextChoices):
     BRONZE = 'BRONZE', 'Bronze'
     SILVER = 'SILVER', 'Prata'
     GOLD = 'GOLD', 'Ouro'
+    PLATINUM = 'PLATINUM', 'Platina'
 
-# Funções auxiliares (movidas para cima)
+
 def get_trail_name(trail_number):
     """Mapear número da trilha para nome descritivo"""
     trail_names = {
-        1: "Cálculo do Incentivo",
-        2: "Lançamentos do Incentivo", 
-        3: "Controles Suplementares",
-        4: "Concessão do Incentivo"
+        1: 'Cálculo do Incentivo',
+        2: 'Lançamentos do Incentivo',
+        3: 'Controles Suplementares',
+        4: 'Concessão do Incentivo'
     }
-    return trail_names.get(trail_number, f"T{trail_number}")
+    return trail_names.get(trail_number, f'T{trail_number}')
+
 
 def get_difficulty_text(difficulty):
-    """Converter dificuldade para texto em português"""
+    """Converter dificuldade para texto em portugês"""
     return dict(DifficultyLevel.choices).get(difficulty, difficulty)
+
 
 def generate_standardized_badge_name(program, trail_number, difficulty):
     """Gerar nome padronizado da badge"""
@@ -38,24 +44,35 @@ def generate_standardized_badge_name(program, trail_number, difficulty):
     difficulty_text = get_difficulty_text(difficulty)
     return f"{program} - {trail_name} - {difficulty_text}"
 
+
+def get_trail_number_from_name(track_name):
+    """Mapear nome da trilha para número"""
+    trail_map = {
+        'Cálculo do Incentivo': 1,
+        'Lançamentos do Incentivo': 2,
+        'Controles Suplementares': 3,
+        'Concessão do Incentivo': 4
+    }
+    return trail_map.get(track_name, 1)
+
+
 class TrailAccess(models.Model):
     """Registra acessos dos usuários às trilhas"""
     PROGRAMS = [
         ('PROIND', 'PROIND'),
-        ('PRODEPE', 'PRODEPE'), 
+        ('PRODEPE', 'PRODEPE'),
         ('PRODEAUTO', 'PRODEAUTO'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='trail_accesses')
     program = models.CharField(max_length=10, choices=PROGRAMS)
     trail_number = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(4)])
-    
     first_access = models.DateTimeField(auto_now_add=True)
     last_access = models.DateTimeField(auto_now=True)
     access_count = models.PositiveIntegerField(default=1)
     
     class Meta:
-        unique_together = ['user', 'program', 'trail_number']  # Simplificado
+        unique_together = ('user', 'program', 'trail_number')
         indexes = [
             models.Index(fields=['user', 'program']),
             models.Index(fields=['user', 'last_access']),
@@ -72,18 +89,17 @@ class TrailAccess(models.Model):
     def __str__(self):
         return f"{self.user.email} - {self.program} T{self.trail_number} ({self.access_count}x)"
 
+
 class UserProgramProgress(models.Model):
     """Mantém o progresso consolidado do usuário por programa"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='program_progress')
     program = models.CharField(max_length=10, choices=TrailAccess.PROGRAMS)
-    
-    # Apenas o essencial
-    trails_accessed = models.JSONField(default=list)  # [1, 2, 3, 4]
+    trails_accessed = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['user', 'program']
+        unique_together = ('user', 'program')
         verbose_name = 'Progresso do Programa'
         verbose_name_plural = 'Progressos dos Programas'
         ordering = ['user', 'program']
@@ -101,12 +117,10 @@ class UserProgramProgress(models.Model):
     
     @property
     def last_accessed_trail(self):
-        """Calculado dinamicamente"""
         return max(self.trails_accessed) if self.trails_accessed else 0
     
     @property
     def total_access_count(self):
-        """Calculado dinamicamente"""
         return self.user.trail_accesses.filter(program=self.program).aggregate(
             total=models.Sum('access_count')
         )['total'] or 0
@@ -120,12 +134,10 @@ class UserProgramProgress(models.Model):
                 return trail_num
         return None
 
-# Simplificar UserOverallProgress - fazer tudo @property
+
 class UserOverallProgress(models.Model):
-    """Progresso geral do usuário - apenas timestamps"""
+    """Progresso geral do usuário"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='overall_progress')
-    
-    # Apenas timestamps essenciais
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -138,7 +150,6 @@ class UserOverallProgress(models.Model):
     
     @property
     def total_trails_accessed(self):
-        """Calculado dinamicamente"""
         return sum(len(p.trails_accessed) for p in self.user.program_progress.all())
     
     @property
@@ -157,6 +168,7 @@ class UserOverallProgress(models.Model):
     def overall_percentage(self):
         return round((self.total_trails_accessed / 12) * 100, 1)
 
+
 class BadgeDefinition(models.Model):
     """Define os badges disponíveis no sistema"""
     PROGRAMS = TrailAccess.PROGRAMS
@@ -165,21 +177,20 @@ class BadgeDefinition(models.Model):
     description = models.TextField()
     program = models.CharField(max_length=10, choices=PROGRAMS)
     trail_number = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(4)])
-    difficulty = models.CharField(max_length=10, choices=DifficultyLevel.choices)
+    difficulty = models.CharField(max_length=15, choices=DifficultyLevel.choices)
     badge_type = models.CharField(max_length=10, choices=BadgeType.choices)
-    badge_image = models.CharField(max_length=255, default='badges/default.png') 
-    
+    badge_image = models.CharField(max_length=255, default='badges/default.png')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ['program', 'trail_number', 'difficulty']
+        unique_together = ('program', 'trail_number', 'difficulty')
         verbose_name = 'Definição de Badge'
         verbose_name_plural = 'Definições de Badges'
     
     def __str__(self):
         return generate_standardized_badge_name(self.program, self.trail_number, self.difficulty)
-        
+    
     def save(self, *args, **kwargs):
         self.name = generate_standardized_badge_name(self.program, self.trail_number, self.difficulty)
         super().save(*args, **kwargs)
@@ -187,21 +198,21 @@ class BadgeDefinition(models.Model):
     @property
     def badge_image_url(self):
         """Retorna URL completa da imagem do badge"""
-        base_url = "http://localhost:8000" if settings.DEBUG else "https://fiscolab-backend-2.onrender.com/"
-        
+        base_url = 'http://localhost:8000' if settings.DEBUG else 'https://fiscolab-backend-2.onrender.com'
         full_path = os.path.join(settings.MEDIA_ROOT, self.badge_image)
+        
         if os.path.exists(full_path):
             return f"{base_url}{settings.MEDIA_URL}{self.badge_image}"
         else:
             return f"{base_url}{settings.MEDIA_URL}badges/default.jpg"
+
 
 class ChallengeCompletion(models.Model):
     """Registra a conclusão de desafios pelos usuários"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='challenge_completions')
     program = models.CharField(max_length=10, choices=TrailAccess.PROGRAMS)
     trail_number = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(4)])
-    difficulty = models.CharField(max_length=10, choices=DifficultyLevel.choices)
-    
+    difficulty = models.CharField(max_length=15, choices=DifficultyLevel.choices)
     challenge_id = models.PositiveIntegerField(null=True, blank=True)
     completed_at = models.DateTimeField(auto_now_add=True)
     score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -209,50 +220,52 @@ class ChallengeCompletion(models.Model):
     completion_time_seconds = models.PositiveIntegerField(null=True, blank=True)
     
     class Meta:
-        unique_together = ['user', 'program', 'trail_number', 'difficulty']
+        unique_together = ('user', 'program', 'trail_number', 'difficulty')
         verbose_name = 'Conclusão de Desafio'
         verbose_name_plural = 'Conclusões de Desafios'
     
     def __str__(self):
         return f"{self.user.email} - {generate_standardized_badge_name(self.program, self.trail_number, self.difficulty)}"
 
+
 class UserBadge(models.Model):
     """Badges conquistados pelos usuários"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='badges')
     badge_definition = models.ForeignKey(BadgeDefinition, on_delete=models.CASCADE)
-    challenge_completion = models.OneToOneField(ChallengeCompletion, on_delete=models.CASCADE, related_name='badge_earned')
+    challenge_completion = models.OneToOneField(
+        ChallengeCompletion, 
+        on_delete=models.CASCADE, 
+        related_name='badge_earned',
+        null=True,
+        blank=True
+    )
     earned_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ['user', 'badge_definition']
+        unique_together = ('user', 'badge_definition')
         verbose_name = 'Badge do Usuário'
         verbose_name_plural = 'Badges dos Usuários'
     
     def __str__(self):
         return f"{self.user.email} - {self.badge_definition.name}"
 
+
 class CertificateTest(models.Model):
     """Registra testes de certificado realizados pelos usuários"""
     PROGRAMS = [
         ('PROIND', 'PROIND'),
-        ('PRODEPE', 'PRODEPE'), 
+        ('PRODEPE', 'PRODEPE'),
         ('PRODEAUTO', 'PRODEAUTO'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='certificate_tests')
     program = models.CharField(max_length=10, choices=PROGRAMS)
-    track = models.CharField(max_length=100)  # Nome da trilha
-    
-    # Resultados do teste
-    score = models.DecimalField(max_digits=5, decimal_places=2)  # 0-100
+    track = models.CharField(max_length=100)
+    score = models.DecimalField(max_digits=5, decimal_places=2)
     correct_answers = models.PositiveIntegerField()
     total_questions = models.PositiveIntegerField()
-    passed = models.BooleanField()  # True se acertou 4 ou mais de 5
-    
-    # Dados das respostas
-    answers = models.JSONField()  # Lista de respostas do usuário
-    
-    # Timestamps
+    passed = models.BooleanField()
+    answers = models.JSONField(default=list, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(auto_now=True)
     
@@ -266,44 +279,35 @@ class CertificateTest(models.Model):
         verbose_name_plural = 'Testes de Certificados'
     
     def __str__(self):
-        status = "Aprovado" if self.passed else "Reprovado"
+        status = 'Aprovado' if self.passed else 'Reprovado'
         return f"{self.user.email} - {self.program} {self.track} ({status})"
 
+
 class UserCertificate(models.Model):
-    """Certificações conquistadas pelos usuários - persiste independentemente dos testes"""
+    """Certificações conquistadas pelos usuários"""
     PROGRAMS = [
         ('PROIND', 'PROIND'),
-        ('PRODEPE', 'PRODEPE'), 
+        ('PRODEPE', 'PRODEPE'),
         ('PRODEAUTO', 'PRODEAUTO'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_certificates')
     program = models.CharField(max_length=10, choices=PROGRAMS)
-    track = models.CharField(max_length=100)  # Nome da trilha
-    
-    # Dados da certificação
-    certificate_id = models.CharField(max_length=50, unique=True)  # ID único da certificação
-    certificate_name = models.CharField(max_length=200)  # Nome da certificação
+    track = models.CharField(max_length=100)
+    certificate_id = models.CharField(max_length=50, unique=True)
+    certificate_name = models.CharField(max_length=200)
     certificate_description = models.TextField(blank=True, null=True)
-    
-    # Resultados do teste que gerou a certificação
-    score = models.DecimalField(max_digits=5, decimal_places=2)  # 0-100
+    score = models.DecimalField(max_digits=5, decimal_places=2)
     correct_answers = models.PositiveIntegerField()
     total_questions = models.PositiveIntegerField()
-    
-    # Dados das respostas (para possível revalidação)
     answers = models.JSONField(default=list, blank=True)
-    
-    # Timestamps
     earned_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(null=True, blank=True)  # Opcional: data de expiração
-    
-    # Status da certificação
+    expires_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    is_verified = models.BooleanField(default=True)  # Se foi verificada pelo sistema
+    is_verified = models.BooleanField(default=True)
     
     class Meta:
-        unique_together = ['user', 'program', 'track']  # Um usuário só pode ter uma cert por programa/trilha
+        unique_together = ('user', 'program', 'track')
         indexes = [
             models.Index(fields=['user', 'earned_at']),
             models.Index(fields=['program', 'track']),
@@ -315,12 +319,12 @@ class UserCertificate(models.Model):
         ordering = ['-earned_at']
     
     def __str__(self):
-        return f"{self.user.email} - {self.program} {self.track} ({self.score}%)"
+        return f"{self.user.email} - {self.program} {self.track} ({self.score})"
     
     @property
     def certificate_url(self):
         """URL para download/visualização do certificado"""
-        return f"/certificates/{self.certificate_id}/download/"
+        return f"/certificates/{self.certificate_id}/download"
     
     @property
     def is_expired(self):
@@ -333,9 +337,9 @@ class UserCertificate(models.Model):
     def status_display(self):
         """Status legível da certificação"""
         if not self.is_active:
-            return "Inativa"
+            return 'Inativa'
         if self.is_expired:
-            return "Expirada"
+            return 'Expirada'
         if not self.is_verified:
-            return "Pendente de Verificação"
-        return "Ativa"
+            return 'Pendente de Verificação'
+        return 'Ativa'

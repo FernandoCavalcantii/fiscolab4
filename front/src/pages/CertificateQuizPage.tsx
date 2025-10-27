@@ -61,7 +61,6 @@ const ActionButton = styled.button`
   }
 `;
 
-
 const AnswerInput = styled.input`
   width: 100%;
   max-width: 300px;
@@ -148,22 +147,20 @@ const CertificateQuizPage: React.FC = () => {
     
     const numericAnswer = parseFloat(userAnswer);
     const correctAnswer = currentQuestion.correct_answer;
-    const tolerance = 0.01; // Tolerância para comparação de números decimais
+    const tolerance = 0.01;
     
     const isAnswerCorrect = Math.abs(numericAnswer - correctAnswer) <= tolerance;
     setIsAnswered(true);
     
-    // Salvar resposta
     setAnswers(prev => [...prev, {
       question_id: currentQuestion.id,
       user_answer: numericAnswer,
       is_correct: isAnswerCorrect
     }]);
 
-    // Avançar automaticamente para a próxima pergunta após um pequeno delay
     setTimeout(() => {
       handleNext();
-    }, 1000); // 1 segundo de delay para mostrar o feedback
+    }, 1000);
   };
   
   const handleNext = () => {
@@ -174,7 +171,6 @@ const CertificateQuizPage: React.FC = () => {
       setUserAnswer('');
       setIsAnswered(false);
     } else {
-      // Finalizar quiz e calcular resultado
       finishQuiz();
     }
   };
@@ -183,7 +179,7 @@ const CertificateQuizPage: React.FC = () => {
     const correctAnswers = answers.filter(a => a.is_correct).length;
     const totalQuestions = questions.length;
     const score = (correctAnswers / totalQuestions) * 100;
-    const passed = correctAnswers >= 4; // Precisa acertar pelo menos 4 de 5
+    const passed = correctAnswers >= 4; // 4 de 5 = 80%
 
     console.log('🔍 Dados do teste:', {
       program,
@@ -213,8 +209,9 @@ const CertificateQuizPage: React.FC = () => {
       });
 
       console.log('✅ Teste enviado com sucesso:', result);
+      console.log('🏆 Badge recebida?', result.badge_earned);
 
-      // Navegar para página de resultado
+      // Navegar para página de resultado COM os dados do certificado e badge
       navigate(`/certificados/resultado/${program}/${track}`, {
         state: {
           score,
@@ -222,7 +219,10 @@ const CertificateQuizPage: React.FC = () => {
           correctAnswers,
           totalQuestions,
           answers,
-          questions
+          questions,
+          program,
+          track,
+          certificateData: result // NOVO: Passa todos os dados da resposta incluindo badge_earned
         }
       });
     } catch (err: any) {

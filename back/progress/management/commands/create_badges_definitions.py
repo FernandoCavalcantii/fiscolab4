@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 from progress.models import BadgeDefinition, DifficultyLevel, BadgeType, generate_standardized_badge_name
 
+
 class Command(BaseCommand):
-    help = 'Cria todas as definições de badges do sistema com nomes padronizados'
+    help = 'Cria todas as definições de badges do sistema (36 de desafios + 12 de certificados = 48)'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -27,6 +28,8 @@ class Command(BaseCommand):
         
         programs = ['PROIND', 'PRODEPE', 'PRODEAUTO']
         trails = [1, 2, 3, 4]
+        
+        # Badges de desafios (36 total: 3 programas × 4 trilhas × 3 dificuldades)
         difficulties = [
             ('EASY', 'BRONZE'),
             ('MEDIUM', 'SILVER'), 
@@ -35,15 +38,16 @@ class Command(BaseCommand):
 
         created_count = 0
         updated_count = 0
-        self.stdout.write("🎯 Criando definições de badges com nomes padronizados...")
-        self.stdout.write("=" * 60)
+        self.stdout.write("🎯 Criando definições de badges...")
+        self.stdout.write("=" * 70)
         
         for program in programs:
             self.stdout.write(f"\n📚 Programa: {program}")
+            
             for trail in trails:
+                # Criar badges de desafios (Bronze, Prata, Ouro)
                 for difficulty, badge_type in difficulties:
                     standardized_name = generate_standardized_badge_name(program, trail, difficulty)
-                    
                     badge_image_path = f"badges/{program.lower()}_t{trail}_{badge_type.lower()}.png"
                     
                     badge_def, created = BadgeDefinition.objects.get_or_create(
@@ -64,14 +68,36 @@ class Command(BaseCommand):
                     else:
                         if badge_def.name != standardized_name:
                             old_name = badge_def.name
-                            badge_def.save() 
+                            badge_def.save()
                             updated_count += 1
                             self.stdout.write(f"  🔄 {old_name}")
                             self.stdout.write(f"     -> {badge_def.name}")
                         else:
                             self.stdout.write(f"  ⏭️  {badge_def.name} (já existe)")
+                
+                # Criar badge de certificado (Platina)
+                cert_name = generate_standardized_badge_name(program, trail, 'CERTIFICATE')
+                cert_image_path = f"badges/{program.lower()}_t{trail}_platinum.png"
+                
+                cert_badge, created = BadgeDefinition.objects.get_or_create(
+                    program=program,
+                    trail_number=trail,
+                    difficulty='CERTIFICATE',
+                    defaults={
+                        'description': f'Badge conquistado ao obter certificado de {cert_name.split(" - ")[1]}',
+                        'badge_type': 'PLATINUM',
+                        'badge_image': cert_image_path
+                    }
+                )
+                
+                if created:
+                    created_count += 1
+                    self.stdout.write(self.style.SUCCESS(f"  🏆 {cert_badge.name}"))
+                    self.stdout.write(f"     -> {cert_image_path}")
+                else:
+                    self.stdout.write(f"  ⏭️  {cert_badge.name} (já existe)")
 
-        self.stdout.write("=" * 60)
+        self.stdout.write("=" * 70)
         self.stdout.write(
             self.style.SUCCESS(
                 f'🎉 Resumo:'
@@ -79,7 +105,7 @@ class Command(BaseCommand):
         )
         self.stdout.write(f"   • {created_count} badges criados")
         self.stdout.write(f"   • {updated_count} badges atualizados")
-        self.stdout.write(f"   • Total no sistema: {BadgeDefinition.objects.count()}/36")
+        self.stdout.write(f"   • Total no sistema: {BadgeDefinition.objects.count()}/48")
         
         if created_count > 0:
             self.stdout.write(
@@ -105,7 +131,7 @@ class Command(BaseCommand):
             )
             
             if old_name != new_name:
-                badge.save() 
+                badge.save()
                 updated_count += 1
                 self.stdout.write(f"✅ {old_name}")
                 self.stdout.write(f"   -> {new_name}")
@@ -120,7 +146,7 @@ class Command(BaseCommand):
         """Lista todos os arquivos de imagem necessários"""
         programs = ['PROIND', 'PRODEPE', 'PRODEAUTO']
         trails = [1, 2, 3, 4]
-        badge_types = ['bronze', 'silver', 'gold']
+        badge_types = ['bronze', 'silver', 'gold', 'platinum']  # Adicionado platinum
         
         self.stdout.write("📁 Arquivos de badge necessários:")
         self.stdout.write("=" * 50)
@@ -135,5 +161,6 @@ class Command(BaseCommand):
         total_files = len(programs) * len(trails) * len(badge_types)
         self.stdout.write(f"\n📊 Total: {total_files} arquivos necessários")
         self.stdout.write("\n💡 Comandos:")
-        self.stdout.write("   python manage.py create_badge_definitions")
-        self.stdout.write("   python manage.py create_badge_definitions --update-existing")
+        self.stdout.write("   python manage.py create_badges_definitions")
+        self.stdout.write("   python manage.py create_badges_definitions --update-existing")
+        self.stdout.write("   python manage.py create_badges_definitions --list-files")

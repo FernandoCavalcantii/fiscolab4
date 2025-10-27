@@ -6,23 +6,22 @@ from django.utils import timezone
 from django.db import transaction
 from django.db import models
 
-# Importar modelos primeiro
 from .models import (
     TrailAccess, UserProgramProgress, UserOverallProgress,
-    ChallengeCompletion, UserBadge, BadgeDefinition, UserCertificate, CertificateTest
+    ChallengeCompletion, UserBadge, BadgeDefinition, UserCertificate, 
+    CertificateTest, get_trail_number_from_name
 )
 
-# Verificar se os modelos foram importados corretamente
 print(f"🔍 CertificateTest importado: {CertificateTest is not None}")
 print(f"🔍 UserCertificate importado: {UserCertificate is not None}")
 
-# Importar utilitários
 try:
     from .certificate_utils import create_user_certificate_from_test
     print("✅ certificate_utils importado com sucesso")
 except ImportError as e:
     print(f"❌ Erro ao importar certificate_utils: {e}")
     create_user_certificate_from_test = None
+
 from .serializers import (
     TrackTrailAccessSerializer, 
     UserProgramProgressSerializer,
@@ -31,6 +30,7 @@ from .serializers import (
     CertificateTestSubmissionSerializer,
     CertificateTestSerializer
 )
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -90,6 +90,7 @@ def track_trail_access(request):
             'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_progress(request):
@@ -116,6 +117,7 @@ def get_user_progress(request):
         'total_challenges_completed': total_challenges,
     })
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_program_progress(request, program):
@@ -138,6 +140,7 @@ def get_program_progress(request, program):
             'last_accessed_trail': 0,
             'total_access_count': 0
         })
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -211,6 +214,7 @@ def complete_challenge(request):
             'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_badges(request):
@@ -232,13 +236,14 @@ def get_user_badges(request):
             'trail_number': badge.badge_definition.trail_number,
             'difficulty': badge.badge_definition.difficulty,
             'earned_at': badge.earned_at,
-            'score': float(badge.challenge_completion.score) if badge.challenge_completion.score else None,
+            'score': float(badge.challenge_completion.score) if badge.challenge_completion and badge.challenge_completion.score else None,
         })
     
     total_badges = len(badges_data)
     bronze_badges = sum(1 for b in badges_data if b['type'] == 'BRONZE')
     silver_badges = sum(1 for b in badges_data if b['type'] == 'SILVER')
     gold_badges = sum(1 for b in badges_data if b['type'] == 'GOLD')
+    platinum_badges = sum(1 for b in badges_data if b['type'] == 'PLATINUM')
     
     proind_badges = sum(1 for b in badges_data if b['program'] == 'PROIND')
     prodepe_badges = sum(1 for b in badges_data if b['program'] == 'PRODEPE')
@@ -254,7 +259,8 @@ def get_user_badges(request):
             'bronze_badges': bronze_badges,
             'silver_badges': silver_badges,
             'gold_badges': gold_badges,
-            'completion_percentage': round((total_badges / 36) * 100, 2),
+            'platinum_badges': platinum_badges,
+            'completion_percentage': round((total_badges / 48) * 100, 2),
             'proind_badges': proind_badges,
             'prodepe_badges': prodepe_badges,
             'prodeauto_badges': prodeauto_badges,
@@ -262,6 +268,7 @@ def get_user_badges(request):
             'last_badge_earned': last_badge['earned_at'] if last_badge else None,
         }
     })
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -272,6 +279,7 @@ def get_badge_stats(request):
     bronze_badges = user_badges.filter(badge_definition__badge_type='BRONZE').count()
     silver_badges = user_badges.filter(badge_definition__badge_type='SILVER').count()
     gold_badges = user_badges.filter(badge_definition__badge_type='GOLD').count()
+    platinum_badges = user_badges.filter(badge_definition__badge_type='PLATINUM').count()
     
     program_stats = []
     for program in ['PROIND', 'PRODEPE', 'PRODEAUTO']:
@@ -280,8 +288,8 @@ def get_badge_stats(request):
         program_stats.append({
             'program': program,
             'badges_earned': program_badges,
-            'total_possible': 12,
-            'percentage': round((program_badges / 12) * 100, 1)
+            'total_possible': 16, 
+            'percentage': round((program_badges / 16) * 100, 1)
         })
     
     first_badge = user_badges.order_by('earned_at').first()
@@ -293,12 +301,14 @@ def get_badge_stats(request):
             'bronze_badges': bronze_badges,
             'silver_badges': silver_badges,
             'gold_badges': gold_badges,
-            'completion_percentage': round((total_badges / 36) * 100, 2),
+            'platinum_badges': platinum_badges,
+            'completion_percentage': round((total_badges / 48) * 100, 2),
             'first_badge_earned': first_badge.earned_at if first_badge else None,
             'last_badge_earned': last_badge.earned_at if last_badge else None,
         },
         'program_stats': program_stats
     })
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -328,18 +338,12 @@ def submit_certificate_test(request):
     
     try:
         with transaction.atomic():
-            # Calcular estatísticas das respostas
             answers = data['answers']
             correct_answers = sum(1 for answer in answers if answer.get('is_correct', False))
             total_questions = len(answers)
             
             print(f"🔍 Estatísticas: {correct_answers}/{total_questions} corretas")
             
-            # Verificar se CertificateTest está disponível
-            print(f"🔍 CertificateTest disponível: {CertificateTest is not None}")
-            print(f"🔍 Tipo de CertificateTest: {type(CertificateTest)}")
-            
-            # Criar registro do teste
             try:
                 certificate_test = CertificateTest.objects.create(
                     user=user,
@@ -358,15 +362,42 @@ def submit_certificate_test(request):
                 traceback.print_exc()
                 raise create_error
             
-            # Se o usuário passou no teste, criar certificação persistente
             user_certificate = None
+            certificate_badge = None
+            
             if certificate_test.passed and create_user_certificate_from_test:
                 try:
                     print("🔍 Criando certificação persistente...")
                     user_certificate = create_user_certificate_from_test(certificate_test)
                     print(f"✅ Certificação persistente criada: {user_certificate.certificate_id}")
+                    
+                    try:
+                        trail_number = get_trail_number_from_name(data['track'])
+                        badge_def = BadgeDefinition.objects.get(
+                            program=data['program'],
+                            trail_number=trail_number,
+                            difficulty='CERTIFICATE',
+                            is_active=True
+                        )
+                        user_badge = UserBadge.objects.create(
+                            user=user,
+                            badge_definition=badge_def,
+                            challenge_completion=None
+                        )
+                        certificate_badge = {
+                            'id': user_badge.id,
+                            'name': badge_def.name,
+                            'image_url': badge_def.badge_image_url,
+                            'type': badge_def.badge_type,
+                            'description': badge_def.description
+                        }
+                        print(f"🏆 Badge de certificado criado: {badge_def.name}")
+                    except BadgeDefinition.DoesNotExist:
+                        print("⚠️ Badge de certificado não encontrado")
+                    except Exception as badge_error:
+                        print(f"❌ Erro ao criar badge de certificado: {badge_error}")
+                        
                 except Exception as e:
-                    # Log do erro mas não falha o processo
                     print(f"❌ Erro ao criar certificação persistente: {e}")
             elif certificate_test.passed and not create_user_certificate_from_test:
                 print("⚠️ Função create_user_certificate_from_test não disponível")
@@ -381,11 +412,13 @@ def submit_certificate_test(request):
                 'passed': certificate_test.passed
             }
             
-            # Adicionar informações da certificação se foi criada
             if user_certificate:
                 response_data['certificate_created'] = True
                 response_data['certificate_id'] = user_certificate.certificate_id
                 response_data['certificate_name'] = user_certificate.certificate_name
+                
+                if certificate_badge:
+                    response_data['badge_earned'] = certificate_badge
             else:
                 response_data['certificate_created'] = False
             
@@ -400,6 +433,7 @@ def submit_certificate_test(request):
             'error': 'Erro interno do servidor',
             'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -431,6 +465,7 @@ def get_user_certificates(request):
         'failed_certificates': len([c for c in certificates_data if not c['passed']])
     })
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_completed_certificates(request):
@@ -439,17 +474,7 @@ def get_completed_certificates(request):
     """
     user = request.user
     print(f"🔍 Buscando certificados completados para usuário: {user.email}")
-    print(f"🔍 Headers da requisição: {dict(request.headers)}")
-    print(f"🔍 Authorization header: {request.headers.get('Authorization', 'Não encontrado')}")
     
-    # Buscar todos os certificados do usuário (aprovados e reprovados)
-    all_certificates = CertificateTest.objects.filter(user=user).order_by('-completed_at')
-    print(f"🔍 Total de certificados do usuário: {all_certificates.count()}")
-    
-    for cert in all_certificates:
-        print(f"🔍 Certificado: {cert.program}-{cert.track}, passed: {cert.passed}, score: {cert.score}")
-    
-    # Buscar apenas os aprovados
     completed_certificates = CertificateTest.objects.filter(
         user=user, 
         passed=True
@@ -474,15 +499,15 @@ def get_completed_certificates(request):
         'total_completed': len(completed_data)
     })
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_certificates_persistent(request):
     """
-    Retorna as certificações persistentes do usuário (independente da existência dos testes)
+    Retorna as certificações persistentes do usuário
     """
     user = request.user
     
-    # Buscar certificações persistentes
     user_certificates = UserCertificate.objects.filter(
         user=user,
         is_active=True,
@@ -507,12 +532,10 @@ def get_user_certificates_persistent(request):
             'is_expired': cert.is_expired
         })
     
-    # Estatísticas
     total_certificates = len(certificates_data)
     active_certificates = len([c for c in certificates_data if not c['is_expired']])
     expired_certificates = len([c for c in certificates_data if c['is_expired']])
     
-    # Agrupar por programa
     by_program = {}
     for cert in certificates_data:
         program = cert['program']

@@ -87,10 +87,10 @@ const NavButton = styled.button`
 `;
 
 const PrimaryNavButton = styled(NavButton)`
-    background-color: #495057;
-    color: #fff;
-    border-color: #495057;
-    &:hover { background-color: #343a40; }
+  background-color: #495057;
+  color: #fff;
+  border-color: #495057;
+  &:hover { background-color: #343a40; }
 `;
 
 const LoadingContainer = styled.div`
@@ -139,6 +139,13 @@ const ErrorContainer = styled.div`
   }
 `;
 
+// NOVO: Interface para tracking de respostas
+interface QuestionResult {
+  questionId: number;
+  isCorrect: boolean;
+  userAnswer: string | number | null;
+}
+
 const QuizPage: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -148,6 +155,10 @@ const QuizPage: React.FC = () => {
   const [quizData, setQuizData] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // NOVO: Tracking de respostas
+  const [questionResults, setQuestionResults] = useState<QuestionResult[]>([]);
+  const [startTime] = useState(Date.now());
   
   const navigate = useNavigate();
   const { id: challengeId } = useParams();
@@ -195,7 +206,7 @@ const QuizPage: React.FC = () => {
 
   const currentQuestion = quizData[currentQuestionIndex];
 
-    if (loading) {
+  if (loading) {
     return (
       <QuizContainer>
         <LoadingContainer>
@@ -244,10 +255,13 @@ const QuizPage: React.FC = () => {
   };
   
   const handleConfirmAnswer = () => {
+    let correct = false;
+    let userAnswerValue: string | number | null = null;
+
     if (currentQuestion.type === 'multiple-choice') {
       if (selectedAnswer === null) return;
-      const correct = selectedAnswer === currentQuestion.correctAnswerIndex;
-      setIsCorrect(correct);
+      correct = selectedAnswer === currentQuestion.correctAnswerIndex;
+      userAnswerValue = selectedAnswer;
     } else if (currentQuestion.type === 'problem') {
       if (essayAnswer.trim() === '') return;
       
@@ -255,89 +269,66 @@ const QuizPage: React.FC = () => {
       const correctAnswer = currentQuestion.correctAnswer || 0;
       
       const tolerance = 0.01;
-      const correct = Math.abs(userAnswer - correctAnswer) <= tolerance;
-      
-      setIsCorrect(correct);
+      correct = Math.abs(userAnswer - correctAnswer) <= tolerance;
+      userAnswerValue = essayAnswer;
     } else {
-      setIsCorrect(true);
+      // Essay sempre conta como correto (não avaliado automaticamente)
+      correct = true;
+      userAnswerValue = essayAnswer;
     }
+    
+    setIsCorrect(correct);
     setIsAnswered(true);
+
+    // NOVO: Registrar resultado da questão
+    const newResult: QuestionResult = {
+      questionId: currentQuestion.id || currentQuestionIndex,
+      isCorrect: correct,
+      userAnswer: userAnswerValue
+    };
+    
+    setQuestionResults(prev => [...prev, newResult]);
+    
+    console.log('📊 Resultado registrado:', newResult);
+    console.log('📊 Total de acertos até agora:', [...questionResults, newResult].filter(r => r.isCorrect).length);
   };
 
-  {currentQuestion.type === 'multiple-choice' ? (
-    <AnswerOptions
-      options={currentQuestion.options!}
-      selectedAnswer={selectedAnswer}
-      onSelectAnswer={handleSelectAnswer}
-      isAnswered={isAnswered}
-      correctAnswerIndex={currentQuestion.correctAnswerIndex!}
-    />
-  ) : (
-    <EssayAnswer
-      userAnswer={essayAnswer}
-      setUserAnswer={setEssayAnswer}
-      isAnswered={isAnswered}
-    />
-  )}
-
-  {isAnswered && (
-    <FeedbackCard isCorrect={!!isCorrect}>
-      <h3>
-        {currentQuestion.type === 'multiple-choice' && (isCorrect ? '✅ Você acertou!' : '❌ Você errou!')}
-        {currentQuestion.type === 'problem' && (isCorrect ? '✅ Resposta correta!' : '❌ Resposta incorreta!')}
-        {currentQuestion.type === 'essay' && '📝 Justificativa'}
-      </h3>
-      <p>{currentQuestion.justification}</p>
-      {/* Se quiser mostrar a resposta correta quando errar em cálculo */}
-      {currentQuestion.type === 'problem' && !isCorrect && (
-        <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>
-          Resposta correta: {currentQuestion.correctAnswer}
-        </p>
-      )}
-    </FeedbackCard>
-  )}
-
-  
   const handleNavigation = (direction: 'next' | 'prev') => {
-      const newIndex = direction === 'next' ? currentQuestionIndex + 1 : currentQuestionIndex - 1;
+    const newIndex = direction === 'next' ? currentQuestionIndex + 1 : currentQuestionIndex - 1;
+    
+    if (newIndex >= 0 && newIndex < quizData.length) {
+      setCurrentQuestionIndex(newIndex);
+      setSelectedAnswer(null);
+      setEssayAnswer('');
+      setIsAnswered(false);
+      setIsCorrect(null);
+    } else if (newIndex === quizData.length) {
+      // NOVO: Calcular resultados finais
+      const totalQuestions = quizData.length;
+      const correctAnswers = questionResults.filter(r => r.isCorrect).length;
+      const scorePercentage = (correctAnswers / totalQuestions) * 100;
+      const completionTime = Math.floor((Date.now() - startTime) / 1000); // em segundos
       
-      if (newIndex >= 0 && newIndex < quizData.length) {
-          setCurrentQuestionIndex(newIndex);
-          setSelectedAnswer(null);
-          setEssayAnswer('');
-          setIsAnswered(false);
-          setIsCorrect(null);
-      } else if (newIndex === quizData.length) {
-          navigate(`/quiz/resultado/${challengeId}`);
-      }
+      console.log('📊 Resultados finais:', {
+        totalQuestions,
+        correctAnswers,
+        scorePercentage,
+        completionTime
+      });
+      
+      // Navegar para página de resultado com os dados
+      navigate(`/quiz/resultado/${challengeId}`, {
+        state: {
+          challengeId: parseInt(challengeId!),
+          score: scorePercentage,
+          correctAnswers,
+          totalQuestions,
+          completionTime,
+          passed: correctAnswers >= 5 // 5 de 7 = 70%
+        }
+      });
+    }
   };
-
-  if (loading) {
-    return (
-      <QuizContainer>
-        <LoadingContainer>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔄</div>
-          <h3>Carregando desafio...</h3>
-          <p>Aguarde enquanto buscamos as questões aprovadas</p>
-        </LoadingContainer>
-      </QuizContainer>
-    );
-  }
-
-  if (error || quizData.length === 0) {
-    return (
-      <QuizContainer>
-        <ErrorContainer>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
-          <h3>Erro ao carregar desafio</h3>
-          <p>{error || 'Desafio não encontrado ou sem questões disponíveis'}</p>
-          <button onClick={() => navigate('/desafios')}>
-            Voltar aos desafios
-          </button>
-        </ErrorContainer>
-      </QuizContainer>
-    );
-  }
 
   return (
     <QuizContainer>
@@ -353,34 +344,43 @@ const QuizPage: React.FC = () => {
       
       {currentQuestion.type === 'multiple-choice' ? (
         <AnswerOptions
-            options={currentQuestion.options!}
-            selectedAnswer={selectedAnswer}
-            onSelectAnswer={handleSelectAnswer}
-            isAnswered={isAnswered}
-            correctAnswerIndex={currentQuestion.correctAnswerIndex!}
+          options={currentQuestion.options!}
+          selectedAnswer={selectedAnswer}
+          onSelectAnswer={handleSelectAnswer}
+          isAnswered={isAnswered}
+          correctAnswerIndex={currentQuestion.correctAnswerIndex!}
         />
       ) : (
         <EssayAnswer
-            userAnswer={essayAnswer}
-            setUserAnswer={setEssayAnswer}
-            isAnswered={isAnswered}
+          userAnswer={essayAnswer}
+          setUserAnswer={setEssayAnswer}
+          isAnswered={isAnswered}
         />
       )}
       
       {isAnswered && (
         <FeedbackCard isCorrect={!!isCorrect}>
-            <h3>
-                {currentQuestion.type === 'multiple-choice' && (isCorrect ? 'Você acertou!' : 'Você errou!')}
-                {currentQuestion.type === 'essay' && 'Justificativa'}
-            </h3>
-            <p>{currentQuestion.justification}</p>
+          <h3>
+            {currentQuestion.type === 'multiple-choice' && (isCorrect ? '✅ Você acertou!' : '❌ Você errou!')}
+            {currentQuestion.type === 'problem' && (isCorrect ? '✅ Resposta correta!' : '❌ Resposta incorreta!')}
+            {currentQuestion.type === 'essay' && '📝 Justificativa'}
+          </h3>
+          <p>{currentQuestion.justification}</p>
+          {currentQuestion.type === 'problem' && !isCorrect && (
+            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>
+              Resposta correta: {currentQuestion.correctAnswer}
+            </p>
+          )}
         </FeedbackCard>
       )}
 
       {!isAnswered ? (
         <ActionButton 
           onClick={handleConfirmAnswer}
-          disabled={(currentQuestion.type === 'multiple-choice' && selectedAnswer === null) || (currentQuestion.type === 'essay' && essayAnswer.trim() === '')}
+          disabled={
+            (currentQuestion.type === 'multiple-choice' && selectedAnswer === null) || 
+            ((currentQuestion.type === 'essay' || currentQuestion.type === 'problem') && essayAnswer.trim() === '')
+          }
         >
           Confirmar resposta
         </ActionButton>

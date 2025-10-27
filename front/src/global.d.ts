@@ -18,6 +18,8 @@ declare module 'react-icons/fa' {
   export const FaCheck: ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>;
   export const FaRegLightbulb: ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>;
   export const FaDatabase: ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>;
+  export const FaExclamationTriangle: React.ComponentType<React.SVGProps<SVGSVGElement> & { size?: number | string }>; // NOVO
+  export const FaSyncAlt: React.ComponentType<React.SVGProps<SVGSVGElement> & { size?: number | string }>; // NOVO
 }
 
 declare module 'react-icons/bs' {
