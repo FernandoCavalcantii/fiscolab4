@@ -155,6 +155,7 @@ const ChallengeGeneratorPage: React.FC = () => {
                   <option value="Cálculo de Incentivo">Cálculo de Incentivo</option>
                   <option value="Lançamentos do Incentivo">Lançamentos do Incentivo</option>
                   <option value="Controles Suplementares">Controles Suplementares</option>
+                  <option value="Concessão do Incentivo">Concessão do Incentivo</option>
                 </select>
               </FormGroup>
               <FormGroup>
