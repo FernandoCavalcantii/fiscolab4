@@ -174,7 +174,7 @@ const ChallengeGeneratedPage: React.FC = () => {
                   <>
                     {grouped.discursive.map((q: any, idx: number) => (
                       <EditorContainer key={`disc-${q.id}`}>
-                        <h3>Desafio Discursivo #{idx + 1}</h3>
+                        <h3>Questão Problema #{idx + 1}</h3>
                         <label>Enunciado</label>
                         <TextArea defaultValue={q.statement}
                           onChange={(e) => handleChange(`disc_${idx}_statement`, e.target.value)} />
@@ -189,7 +189,7 @@ const ChallengeGeneratedPage: React.FC = () => {
 
                     {grouped.problems.map((q: any, idx: number) => (
                       <EditorContainer key={`prob-${q.id}`}>
-                        <h3>Desafio de Cálculo #{idx + 1}</h3>
+                        <h3>Questão Problema #{idx + 1}</h3>
                         <label>Enunciado</label>
                         <TextArea defaultValue={q.statement}
                           onChange={(e) => handleChange(`prob_${idx}_statement`, e.target.value)} />
