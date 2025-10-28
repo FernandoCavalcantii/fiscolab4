@@ -46,14 +46,28 @@ def generate_standardized_badge_name(program, trail_number, difficulty):
 
 
 def get_trail_number_from_name(track_name):
-    """Mapear nome da trilha para número"""
+    """Mapear nome da trilha para número (case-insensitive)"""
+    normalized_name = ' '.join(track_name.lower().strip().split())
+    
     trail_map = {
-        'Cálculo do Incentivo': 1,
-        'Lançamentos do Incentivo': 2,
-        'Controles Suplementares': 3,
-        'Concessão do Incentivo': 4
+        'cálculo do incentivo': 1,
+        'lançamentos do incentivo': 2,
+        'controles suplementares': 3,
+        'concessão do incentivo': 4
     }
-    return trail_map.get(track_name, 1)
+    
+    result = trail_map.get(normalized_name)
+    
+    if result is None:
+        print(f"⚠️ Nome de trilha não reconhecido: '{track_name}' (normalizado: '{normalized_name}')")
+        import re
+        match = re.search(r'(\d+)', track_name)
+        if match:
+            return int(match.group(1))
+        return 1
+    
+    return result
+
 
 
 class TrailAccess(models.Model):
