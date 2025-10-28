@@ -47,22 +47,22 @@ services:
                python manage.py runserver 0.0.0.0:8000"
 
   # React Frontend
-  # frontend:
-  #   build:
-  #     context: ./front
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - REACT_APP_API_URL=http://localhost:8000
-  #     - CHOKIDAR_USEPOLLING=true
-  #   volumes:
-  #     - ./front:/app
-  #     - /app/node_modules
-  #   depends_on:
-  #     - django
-  #   stdin_open: true
-  #   tty: true
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./front:/app
+      - /app/node_modules
+    depends_on:
+      - django
+    stdin_open: true
+    tty: true
 
   # Chatbot Service (optional, for separate processing)
   # chatbot:

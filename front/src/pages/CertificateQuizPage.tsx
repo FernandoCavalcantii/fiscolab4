@@ -122,6 +122,10 @@ const CertificateQuizPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await getCertificateQuestions(program, track);
+        console.log('🔍 Questões carregadas:', {
+          totalQuestions: response.questions.length,
+          questions: response.questions.map(q => ({ id: q.id, statement: q.statement.substring(0, 50) + '...' }))
+        });
         setQuestions(response.questions);
       } catch (err: any) {
         console.error('Error fetching certificate questions:', err);
@@ -152,30 +156,146 @@ const CertificateQuizPage: React.FC = () => {
     const isAnswerCorrect = Math.abs(numericAnswer - correctAnswer) <= tolerance;
     setIsAnswered(true);
     
-    setAnswers(prev => [...prev, {
+    const newAnswer = {
       question_id: currentQuestion.id,
       user_answer: numericAnswer,
       is_correct: isAnswerCorrect
-    }]);
-
-    setTimeout(() => {
-      handleNext();
-    }, 1000);
+    };
+    
+    console.log('🔍 handleConfirmAnswer debug:', {
+      currentQuestionIndex,
+      questionId: currentQuestion.id,
+      userAnswer: numericAnswer,
+      correctAnswer,
+      isAnswerCorrect,
+      totalAnswersBefore: answers.length
+    });
+    
+    setAnswers(prev => {
+      const newAnswers = [...prev, newAnswer];
+      console.log('📝 Answers updated:', {
+        totalAnswers: newAnswers.length,
+        answers: newAnswers.map(a => ({ 
+          question_id: a.question_id, 
+          is_correct: a.is_correct 
+        }))
+      });
+      
+      // CORREÇÃO: Verificar se é a última questão antes de chamar handleNext
+      setTimeout(() => {
+        if (currentQuestionIndex === questions.length - 1) {
+          // É a última questão, finalizar diretamente
+          console.log('🏁 Última questão respondida, finalizando quiz');
+          finishQuizWithAnswers(newAnswers);
+        } else {
+          // Não é a última questão, continuar normalmente
+          handleNext();
+        }
+      }, 1000);
+      
+      return newAnswers;
+    });
   };
   
   const handleNext = () => {
     const newIndex = currentQuestionIndex + 1;
     
+    console.log('🔍 handleNext debug:', {
+      currentQuestionIndex,
+      newIndex,
+      questionsLength: questions.length,
+      answersLength: answers.length,
+      willFinish: newIndex >= questions.length
+    });
+    
+    // CORREÇÃO: Garantir que todas as questões sejam processadas
     if (newIndex < questions.length) {
       setCurrentQuestionIndex(newIndex);
       setUserAnswer('');
       setIsAnswered(false);
     } else {
+      console.log('🏁 Finalizando quiz - todas as questões respondidas');
+      console.log('🔍 Verificação final:', {
+        totalQuestions: questions.length,
+        totalAnswers: answers.length,
+        answers: answers.map(a => ({ question_id: a.question_id, is_correct: a.is_correct }))
+      });
       finishQuiz();
     }
   };
 
+  const finishQuizWithAnswers = async (finalAnswers: { question_id: number; user_answer: number; is_correct: boolean }[]) => {
+    // CORREÇÃO: Usar as respostas passadas como parâmetro
+    const correctAnswers = finalAnswers.filter(a => a.is_correct).length;
+    const totalQuestions = questions.length;
+    const score = (correctAnswers / totalQuestions) * 100;
+    const passed = correctAnswers >= 4; // 4 de 5 = 80%
+
+    console.log('🔍 Dados do teste (com respostas finais):', {
+      program,
+      track,
+      correctAnswers,
+      totalQuestions,
+      score,
+      passed,
+      answers: finalAnswers.map(a => ({ 
+        question_id: a.question_id, 
+        user_answer: a.user_answer,
+        is_correct: a.is_correct 
+      }))
+    });
+
+    try {
+      const result = await submitCertificateTest({
+        program: program!,
+        track: track!,
+        answers: finalAnswers.map(a => ({ 
+          question_id: a.question_id, 
+          user_answer: a.user_answer,
+          is_correct: a.is_correct 
+        })),
+        score,
+        passed
+      });
+
+      console.log('✅ Teste enviado com sucesso:', result);
+      console.log('🏆 Badge recebida?', result.badge_earned);
+
+      // Navegar para página de resultado COM os dados do certificado e badge
+      navigate(`/certificados/resultado/${program}/${track}`, {
+        state: {
+          score,
+          passed,
+          correctAnswers,
+          totalQuestions,
+          answers: finalAnswers,
+          questions,
+          program,
+          track,
+          certificateData: result // NOVO: Passa todos os dados da resposta incluindo badge_earned
+        }
+      });
+    } catch (err: any) {
+      console.error('❌ Erro ao enviar teste:', err);
+      console.error('❌ Detalhes do erro:', err.response?.data);
+      console.error('❌ Status do erro:', err.response?.status);
+      setError(`Erro ao enviar resultado do teste: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
   const finishQuiz = async () => {
+    // CORREÇÃO: Validação adicional para garantir que todas as questões foram respondidas
+    if (answers.length !== questions.length) {
+      console.error('❌ ERRO: Número de respostas não confere com número de questões!', {
+        answersLength: answers.length,
+        questionsLength: questions.length,
+        answers: answers.map(a => a.question_id),
+        questions: questions.map(q => q.id)
+      });
+      setError(`Erro interno: ${answers.length} respostas para ${questions.length} questões. Recarregue a página e tente novamente.`);
+      return;
+    }
+    
     const correctAnswers = answers.filter(a => a.is_correct).length;
     const totalQuestions = questions.length;
     const score = (correctAnswers / totalQuestions) * 100;
